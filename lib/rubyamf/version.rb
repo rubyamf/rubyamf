@@ -1,3 +1,3 @@
-module Rubyamf
-  VERSION = "0.0.1"
+module RubyAMF
+  VERSION = "2.0.0"
 end
