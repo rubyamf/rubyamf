@@ -1,0 +1,3 @@
+module Rubyamf
+  # Your code goes here...
+end
