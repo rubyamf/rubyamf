@@ -16,8 +16,18 @@ module RubyAMF
       configuration.preload_models.flatten.each {|m| to_const(m)}
     end
 
-    def to_const name
+    def to_const name #:nodoc:
       name.to_s.split('::').inject(Kernel) {|scope, const_name| scope.const_get(const_name)}
+    end
+
+    def array_wrap obj #:nodoc:
+      if obj.nil?
+        []
+      elsif obj.respond_to?(:to_ary)
+        obj.to_ary
+      else
+        [obj]
+      end
     end
 
     def const_missing const #:nodoc:
