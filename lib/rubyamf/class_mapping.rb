@@ -19,7 +19,7 @@ module RubyAMF
     def map params
       # Extract and validate ruby and AS class names
       ruby_class = params[:ruby]
-      as_class = params[:flash] || params[:as] || params[:actionscript]
+      as_class = params[:as] || params[:flash] || params[:actionscript]
       raise "Must pass ruby class name under :ruby key" unless ruby_class
       raise "Must pass as class name under :flash, :as, or :actionscript key" unless as_class
 
@@ -61,6 +61,22 @@ module RubyAMF
       mapping = @ruby_mappings[ruby_class_name]
       scope ||= mapping.default_scope
       return mapping.scopes[scope]
+    end
+  end
+
+  class ClassMapping < ::RocketAMF::ClassMapping
+    class << self
+      attr_accessor :translate_case, :auto_class_mapping
+
+      def mappings
+        @mappings ||= RubyAMF::MappingSet.new
+      end
+
+      def reset
+        @translate_case = false
+        @auto_class_mapping = false
+        super
+      end
     end
   end
 end
