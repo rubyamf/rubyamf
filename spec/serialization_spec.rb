@@ -59,4 +59,25 @@ describe RubyAMF::Serialization do
       a.rubyamf_hash
     }.should raise_error
   end
+
+  it "should work with RocketAMF class mapper" do
+    # Swap out class mapper
+    old_mapper = RubyAMF.send(:remove_const, :ClassMapper)
+    RubyAMF.const_set(:ClassMapper, RocketAMF::ClassMapping)
+
+    # Test it
+    SerTestClass.module_eval do
+      as_class "com.test.ASClass"
+      map_amf :only => "prop_a"
+      map_amf :testing, :only => "prop_b"
+      map_amf :default_scope => :asdf, :only => "prop_c"
+    end
+    m = RubyAMF::ClassMapper.mappings
+    m.get_as_class_name("SerTestClass").should == "com.test.ASClass"
+    m.get_ruby_class_name("com.test.ASClass").should == "SerTestClass"
+
+    # Swap old class mapper back in
+    RubyAMF.send(:remove_const, :ClassMapper)
+    RubyAMF.const_set(:ClassMapper, old_mapper)
+  end
 end
