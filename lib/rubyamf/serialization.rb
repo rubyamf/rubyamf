@@ -13,6 +13,7 @@ module RubyAMF
       alias :flash_class :as_class
 
       def map_amf scope_or_options=nil, options=nil
+        # Format parameters to pass to RubyAMF::MappingSet#map
         if options
           options[:scope] = scope_or_options
         else

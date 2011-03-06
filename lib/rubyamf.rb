@@ -1,4 +1,5 @@
 require 'rocketamf'
+require 'active_support/inflector'
 
 module RubyAMF
   class << self
@@ -13,11 +14,7 @@ module RubyAMF
 
     def update_configs
       configuration.propagate
-      configuration.preload_models.flatten.each {|m| to_const(m)}
-    end
-
-    def to_const name #:nodoc:
-      name.to_s.split('::').inject(Kernel) {|scope, const_name| scope.const_get(const_name)}
+      configuration.preload_models.flatten.each {|m| m.to_s.constantize}
     end
 
     def array_wrap obj #:nodoc:
@@ -42,6 +39,7 @@ module RubyAMF
   end
 end
 
+require 'rubyamf/intermediate_object'
 require 'rubyamf/class_mapping'
 require 'rubyamf/serialization'
 require 'rubyamf/configuration'
