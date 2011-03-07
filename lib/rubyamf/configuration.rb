@@ -26,7 +26,6 @@ module RubyAMF
     end
 
     def propagate
-      cm = RubyAMF::ClassMapper
       [:translate_case, :auto_class_mapping, :use_array_collection].each do |prop|
         if RubyAMF::ClassMapper.respond_to?("#{prop}=")
           RubyAMF::ClassMapper.send("#{prop}=", self.send(prop))

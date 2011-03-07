@@ -1,7 +1,17 @@
 require 'rocketamf'
 require 'active_support/inflector'
 
+require 'rubyamf/version'
+require 'rubyamf/intermediate_object'
+require 'rubyamf/class_mapping'
+require 'rubyamf/serialization'
+require 'rubyamf/configuration'
+require 'rubyamf/request_parser'
+require 'rubyamf/request_processor'
+
 module RubyAMF
+  MIME_TYPE = "application/x-amf".freeze
+
   class << self
     def configuration
       @configuration ||= RubyAMF::Configuration.new
@@ -9,10 +19,10 @@ module RubyAMF
 
     def configure
       yield configuration
-      update_configs
+      bootstrap
     end
 
-    def update_configs
+    def bootstrap
       configuration.propagate
       configuration.preload_models.flatten.each {|m| m.to_s.constantize}
     end
@@ -39,16 +49,11 @@ module RubyAMF
   end
 end
 
-require 'rubyamf/intermediate_object'
-require 'rubyamf/class_mapping'
-require 'rubyamf/serialization'
-require 'rubyamf/configuration'
-
 if defined?(Rails)
   if Rails::VERSION::MAJOR == 3
-    puts "bootstrap rails 3"
+    require 'rubyamf/rails3/bootstrap'
   elsif Rails::VERSION::MAJOR == 2 && Rails::VERSION::MINOR >= 3
-    puts "bootstrap rails 2"
+    require 'rubyamf/rails2/bootstrap'
   else
     puts "unsupported rails version"
   end

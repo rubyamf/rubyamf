@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ["Stephen Augenstein"]
   s.email       = ["perl.programmer@gmail.com"]
   s.homepage    = ""
-  s.summary     = %q{TODO: Write a gem summary}
-  s.description = %q{TODO: Write a gem description}
+  s.summary     = %q{AMF remoting for Ruby and Rails}
+  s.description = %q{RubyAMF is an open source flash remoting gateway for Ruby on Rails and other Rack-based web frameworks.}
 
   s.rubyforge_project = "rubyamf"
 
