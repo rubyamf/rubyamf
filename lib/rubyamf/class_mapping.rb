@@ -159,12 +159,13 @@ module RubyAMF
       props = nil
 
       # Get properties for serialization
-      if ruby_obj.is_a?(RubyAMF::IntermediateObject)
-        # Call rubyamf_hash on the object with the configured options (does it itself)
-        props = ruby_obj.rubyamf_hash
-      elsif config = @mappings.serialization_config(ruby_obj.class.name)
-        # Call rubyamf_hash on the object with the serialization configs
-        props = ruby_obj.rubyamf_hash config
+      if ruby_obj.respond_to?(:rubyamf_hash)
+        if ruby_obj.is_a?(RubyAMF::IntermediateObject)
+          props = ruby_obj.rubyamf_hash
+        else
+          config = @mappings.serialization_config(ruby_obj.class.name)
+          props = ruby_obj.rubyamf_hash config
+        end
       else
         # Fall through to default handlers
         props = super(ruby_obj)

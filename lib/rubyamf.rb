@@ -25,6 +25,7 @@ module RubyAMF
     def bootstrap
       configuration.propagate
       configuration.preload_models.flatten.each {|m| m.to_s.constantize}
+      RubyAMF::Serialization.load_support
     end
 
     def array_wrap obj #:nodoc:

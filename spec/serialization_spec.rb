@@ -45,6 +45,14 @@ describe RubyAMF::Serialization do
     m.serialization_config("SerTestClass", :asdf).should == {:only => "prop_c"}
   end
 
+  it "should return an IntermediateObject when to_amf is called" do
+    t = SerTestClass.new
+    obj = t.to_amf({:only => "prop_a"})
+    obj.should be_a(RubyAMF::IntermediateObject)
+    obj.object.should == t
+    obj.options.should == {:only => "prop_a"}
+  end
+
   it "should convert conforming object to serializable hash" do
     t = SerTestClass.new
     t.rubyamf_hash.should == t.attributes
@@ -58,6 +66,12 @@ describe RubyAMF::Serialization do
     lambda {
       a.rubyamf_hash
     }.should raise_error
+  end
+
+  it "should properly process includes" do
+    t = SerTestClass.new
+    t.should_receive(:courses).and_return([SerTestClass.new])
+    t.rubyamf_hash(:except => "prop_a", :include => :courses).should == {"prop_b" => "fdsa", "courses" => [{"prop_b" => "fdsa"}]}
   end
 
   it "should work with RocketAMF class mapper" do
