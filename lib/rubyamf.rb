@@ -1,6 +1,6 @@
 require 'rocketamf'
 require 'active_support/inflector'
-
+require 'active_support/core_ext/array'
 require 'rubyamf/version'
 require 'rubyamf/intermediate_object'
 require 'rubyamf/class_mapping'
@@ -12,7 +12,10 @@ require 'rubyamf/request_processor'
 module RubyAMF
   MIME_TYPE = "application/x-amf".freeze
 
-  class << self
+  # Put in module and use extend so that others can easily override
+  # methods while still being able to call down to the original
+  # through super
+  module ClassMethods
     def configuration
       @configuration ||= RubyAMF::Configuration.new
     end
@@ -28,16 +31,6 @@ module RubyAMF
       RubyAMF::Serialization.load_support
     end
 
-    def array_wrap obj #:nodoc:
-      if obj.nil?
-        []
-      elsif obj.respond_to?(:to_ary)
-        obj.to_ary
-      else
-        [obj]
-      end
-    end
-
     def const_missing const #:nodoc:
       if const == :ClassMapper
         class_mapper = RubyAMF.configuration.class_mapper
@@ -48,8 +41,10 @@ module RubyAMF
       end
     end
   end
+  extend ClassMethods
 end
 
+# Rails specific bootstrapping
 if defined?(Rails)
   if Rails::VERSION::MAJOR == 3
     require 'rubyamf/rails3/bootstrap'

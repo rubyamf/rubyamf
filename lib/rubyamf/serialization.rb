@@ -61,10 +61,10 @@ module RubyAMF
 
       # Process options
       options ||= {}
-      only = RubyAMF.array_wrap(options[:only]).map(&:to_s)
-      except = RubyAMF.array_wrap(options[:except]).map(&:to_s)
+      only = Array.wrap(options[:only]).map(&:to_s)
+      except = Array.wrap(options[:except]).map(&:to_s)
       method_names = []
-      RubyAMF.array_wrap(options[:methods]).each do |name|
+      Array.wrap(options[:methods]).each do |name|
         method_names << name.to_s if respond_to?(name)
       end
 
@@ -88,7 +88,7 @@ module RubyAMF
         # Process options
         base_only_or_except = {:except => options[:except], :only => options[:only]}
         include_has_options = include_associations.is_a?(Hash)
-        associations = include_has_options ? include_associations.keys : RubyAMF.array_wrap(include_associations)
+        associations = include_has_options ? include_associations.keys : Array.wrap(include_associations)
 
         for association in associations
           records = rubyamf_retrieve_association(association)
