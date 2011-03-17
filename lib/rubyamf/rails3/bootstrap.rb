@@ -10,7 +10,7 @@ class RubyAMF::Railtie < Rails::Railtie
   end
 
   initializer "rubyamf.middleware" do
-    config.app_middleware.use RubyAMF::RequestParser, config.rubyamf.gateway_path, Rails.logger
-    config.app_middleware.use RubyAMF::Rails::RequestProcessor, Rails.logger
+    config.app_middleware.use RubyAMF::RequestParser, config.rubyamf.gateway_path
+    config.app_middleware.use RubyAMF::Rails::RequestProcessor
   end
 end

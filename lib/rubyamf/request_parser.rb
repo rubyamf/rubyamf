@@ -1,11 +1,8 @@
-require 'logger'
-
 module RubyAMF
   class RequestParser
-    def initialize app, gateway_path, logger=nil
+    def initialize app, gateway_path
       @app = app
       @gateway_path = gateway_path
-      @logger = logger || Logger.new(STDERR)
     end
 
     # If the content type is AMF and the path matches the configured gateway path,
@@ -25,7 +22,7 @@ module RubyAMF
 
       # Calculate length and return response
       if env['rubyamf.response'].constructed?
-        @logger.info "Sending back AMF"
+        RubyAMF.logger.info "Sending back AMF"
         response = env['rubyamf.response'].to_s
         return [200, {"Content-Type" => RubyAMF::MIME_TYPE, 'Content-Length' => response.length.to_s}, [response]]
       else

@@ -2,6 +2,8 @@ require 'rocketamf'
 require 'active_support/inflector'
 require 'active_support/core_ext/array'
 require 'rubyamf/version'
+require 'rubyamf/logger'
+require 'rubyamf/fault'
 require 'rubyamf/intermediate_object'
 require 'rubyamf/class_mapping'
 require 'rubyamf/serialization'
@@ -18,6 +20,10 @@ module RubyAMF
   module ClassMethods
     def configuration
       @configuration ||= RubyAMF::Configuration.new
+    end
+
+    def logger
+      @logger ||= RubyAMF::Logger.new
     end
 
     def configure

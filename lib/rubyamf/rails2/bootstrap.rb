@@ -6,8 +6,8 @@ module RubyAMF::Rails2
   def bootstrap
     super
     m = ::Rails.configuration.middleware
-    m.use RubyAMF::RequestParser, RubyAMF.configuration.gateway_path, ::Rails.logger
-    m.use RubyAMF::Rails::RequestProcessor, ::Rails.logger
+    m.use RubyAMF::RequestParser, RubyAMF.configuration.gateway_path
+    m.use RubyAMF::Rails::RequestProcessor
   end
 end
 RubyAMF.send(:extend, RubyAMF::Rails2)
