@@ -1,8 +1,7 @@
 module RubyAMF
   class RequestParser
-    def initialize app, gateway_path
+    def initialize app
       @app = app
-      @gateway_path = gateway_path
     end
 
     # If the content type is AMF and the path matches the configured gateway path,
@@ -33,7 +32,7 @@ module RubyAMF
     # Check if we should handle it based on the environment
     def should_handle? env
       return false unless env['CONTENT_TYPE'] == RubyAMF::MIME_TYPE
-      return false unless @gateway_path == env['PATH_INFO']
+      return false unless RubyAMF.configuration.gateway_path == env['PATH_INFO']
       true
     end
   end

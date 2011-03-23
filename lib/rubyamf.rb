@@ -22,6 +22,10 @@ module RubyAMF
       @configuration ||= RubyAMF::Configuration.new
     end
 
+    def configuration= config
+      @configuration = config
+    end
+
     def logger
       @logger ||= RubyAMF::Logger.new
     end
@@ -32,9 +36,9 @@ module RubyAMF
     end
 
     def bootstrap
-      configuration.propagate
-      configuration.preload_models.flatten.each {|m| m.to_s.constantize}
+      configuration.do_model_preloading
       RubyAMF::Serialization.load_support
+      RubyAMF::ClassMapper # Force it to be defined
     end
 
     def const_missing const #:nodoc:

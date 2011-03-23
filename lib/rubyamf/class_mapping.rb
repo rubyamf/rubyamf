@@ -71,25 +71,8 @@ module RubyAMF
   end
 
   class ClassMapping < ::RocketAMF::ClassMapping
-    class << self
-      attr_accessor :translate_case, :auto_class_mapping
-
-      def mappings
-        @mappings ||= RubyAMF::MappingSet.new
-      end
-
-      def reset
-        @translate_case = false
-        @auto_class_mapping = false
-        super
-      end
-    end
-
-    def intitialize
-      super
-      @translate_case = self.class.translate_case === true
-      @auto_class_mapping = self.class.auto_class_mapping === true
-      @hash_key_access = self.class.hash_key_access || :symbol
+    def self.mappings
+      @mappings ||= RubyAMF::MappingSet.new
     end
 
     def get_as_class_name obj
@@ -110,7 +93,7 @@ module RubyAMF
       as_class_name = @mappings.get_as_class_name ruby_class_name
 
       # Auto-map if necessary, removing namespacing to create mapped class name
-      if @auto_class_mapping && ruby_class_name && as_class_name.nil?
+      if RubyAMF.configuration.auto_class_mapping && ruby_class_name && as_class_name.nil?
         as_class_name = ruby_class_name.split('::').pop
         @mappings.map :as => as_class_name, :ruby => ruby_class_name
       end
@@ -123,7 +106,7 @@ module RubyAMF
       ruby_class_name = @mappings.get_ruby_class_name as_class_name
 
       # Auto-map if necessary, removing namespacing to create mapped class name
-      if @auto_class_mapping && as_class_name && ruby_class_name.nil?
+      if RubyAMF.configuration.auto_class_mapping && as_class_name && ruby_class_name.nil?
         ruby_class_name = as_class_name.split('.').pop
         @mappings.map :as => as_class_name, :ruby => ruby_class_name
       end
@@ -139,14 +122,14 @@ module RubyAMF
 
     def populate_ruby_obj obj, props, dynamic_props=nil
       # Translate case of properties before passing down to super
-      if @translate_case
+      if RubyAMF.configuration.translate_case
         case_translator = lambda {|injected, pair| injected[pair[0].to_s.underscore.to_sym] = pair[1]; injected}
         props = props.inject({}, &case_translator)
         dynamic_props = dynamic_props.inject({}, &case_translator) if dynamic_props
       end
 
       # Convert hash key type to string if it's a hash
-      if @hash_key_access == :string && obj.is_a?(Hash)
+      if RubyAMF.configuration.hash_key_access == :string && obj.is_a?(Hash)
         key_change = lambda {|injected, pair| injected[pair[0].to_s] = pair[1]; injected}
         props = props.inject({}, &key_change)
         dynamic_props = dynamic_props.inject({}, &key_change) if dynamic_props
@@ -172,7 +155,7 @@ module RubyAMF
       end
 
       # Translate case of properties if necessary
-      if @translate_case
+      if RubyAMF.configuration.translate_case
         props = props.inject({}) do |injected, pair|
           injected[pair[0].to_s.camelize(:lower)] = pair[1]
           injected

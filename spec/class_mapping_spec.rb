@@ -40,10 +40,11 @@ describe RubyAMF::ClassMapping do
     RubyAMF::ClassMapping.reset
     @set = RubyAMF::ClassMapping.mappings
     @mapper = RubyAMF::ClassMapping.new
+    @conf = RubyAMF.configuration = RubyAMF::Configuration.new
   end
 
   it "should auto-map class on deserialization correctly" do
-    @mapper.instance_variable_set("@auto_class_mapping", true)
+    @conf.auto_class_mapping = true
     as_name = "com.test.UnmappedClass"
     @set.get_ruby_class_name(as_name).should == nil
     obj = @mapper.get_ruby_obj as_name
@@ -52,7 +53,7 @@ describe RubyAMF::ClassMapping do
   end
 
   it "should auto-map class on serialization correctly" do
-    @mapper.instance_variable_set("@auto_class_mapping", true)
+    @conf.auto_class_mapping = true
     name = "UnmappedClass"
     @set.get_as_class_name(name).should == nil
     @mapper.get_as_class_name(UnmappedClass.new).should == name
@@ -60,7 +61,7 @@ describe RubyAMF::ClassMapping do
   end
 
   it "should translate property case on deserialization correctly" do
-    @mapper.instance_variable_set("@translate_case", true)
+    @conf.translate_case = true
     props = {:aProperty => "asdf", :aMoreComplexProperty => "asdf"}
     dynamic_props = {:aDynamicProperty => "fdsa"}
     obj = RocketAMF::Values::TypedHash.new("")
@@ -69,14 +70,14 @@ describe RubyAMF::ClassMapping do
   end
 
   it "should translate property case on serialization correctly" do
-    @mapper.instance_variable_set("@translate_case", true)
+    @conf.translate_case = true
     obj = {"a_dynamic_property" => "asdf"}
     props = @mapper.props_for_serialization(obj)
     props.should == {"aDynamicProperty" => "asdf"}
   end
 
   it "should allow setting hash key type to string" do
-    @mapper.instance_variable_set("@hash_key_access", :string)
+    @conf.hash_key_access = :string
     props = {:asdf => "asdf", :fdsa => "fdsa"}
     obj = RocketAMF::Values::TypedHash.new("")
     @mapper.populate_ruby_obj obj, props

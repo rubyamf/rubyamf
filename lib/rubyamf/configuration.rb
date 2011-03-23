@@ -1,16 +1,17 @@
 module RubyAMF
   class Configuration
-    attr_accessor :translate_case
+    # Rack options
     attr_accessor :gateway_path
-    attr_accessor :auto_class_mapping
-    attr_accessor :use_array_collection
-    attr_accessor :preload_models
+
+    # Serialization options
+    attr_accessor :translate_case, :auto_class_mapping, :use_array_collection, :hash_key_access, :preload_models
 
     def initialize
-      @translate_case = false
       @gateway_path = "/rubyamf/gateway"
+      @translate_case = false
       @auto_class_mapping = false
       @use_array_collection = false
+      @hash_key_access = :symbol
       @preload_models = []
     end
 
@@ -18,6 +19,7 @@ module RubyAMF
       if @class_mapper.nil?
         @class_mapper = RubyAMF::ClassMapping
       end
+      @class_mapper.use_array_collection = @use_array_collection # Make sure it gets copied over
       @class_mapper
     end
 
@@ -25,12 +27,8 @@ module RubyAMF
       @class_mapper = klass
     end
 
-    def propagate
-      [:translate_case, :auto_class_mapping, :use_array_collection].each do |prop|
-        if RubyAMF::ClassMapper.respond_to?("#{prop}=")
-          RubyAMF::ClassMapper.send("#{prop}=", self.send(prop))
-        end
-      end
+    def do_model_preloading
+      @preload_models.flatten.each {|m| m.to_s.constantize}
     end
   end
 end

@@ -90,6 +90,7 @@ module RubyAMF
         include_has_options = include_associations.is_a?(Hash)
         associations = include_has_options ? include_associations.keys : Array.wrap(include_associations)
 
+        # Call rubyamf_hash on each element in the association, passing processed options
         for association in associations
           records = rubyamf_retrieve_association(association)
           unless records.nil?
