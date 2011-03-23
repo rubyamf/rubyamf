@@ -8,6 +8,7 @@ require 'rubyamf/intermediate_object'
 require 'rubyamf/class_mapping'
 require 'rubyamf/serialization'
 require 'rubyamf/configuration'
+require 'rubyamf/envelope'
 require 'rubyamf/request_parser'
 require 'rubyamf/request_processor'
 

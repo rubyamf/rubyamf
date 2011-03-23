@@ -13,8 +13,8 @@ module RubyAMF
 
       # Wrap request and response
       env['rack.input'].rewind
-      env['rubyamf.request'] = RocketAMF::Envelope.new.populate_from_stream(env['rack.input'].read)
-      env['rubyamf.response'] = RocketAMF::Envelope.new
+      env['rubyamf.request'] = RubyAMF::Envelope.new.populate_from_stream(env['rack.input'].read)
+      env['rubyamf.response'] = RubyAMF::Envelope.new
 
       # Pass up the chain to the request processor, or whatever is layered in between
       result = @app.call(env)
