@@ -58,9 +58,9 @@ end
 # Rails specific bootstrapping
 if defined?(Rails)
   if Rails::VERSION::MAJOR == 3
-    require 'rubyamf/rails3/bootstrap'
+    require 'rubyamf/rails/rails3_bootstrap'
   elsif Rails::VERSION::MAJOR == 2 && Rails::VERSION::MINOR >= 3
-    require 'rubyamf/rails2/bootstrap'
+    require 'rubyamf/rails/rails2_bootstrap'
   else
     puts "unsupported rails version"
   end
