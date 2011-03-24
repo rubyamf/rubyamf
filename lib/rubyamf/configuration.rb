@@ -1,19 +1,20 @@
 module RubyAMF
   class Configuration
     # Gateway options
-    attr_accessor :gateway_path, :param_mappings
+    attr_accessor :gateway_path, :param_mappings, :populate_params_hash
 
     # Serialization options
     attr_accessor :translate_case, :auto_class_mapping, :use_array_collection, :hash_key_access, :preload_models
 
     def initialize
       @gateway_path = "/rubyamf/gateway"
+      @param_mappings = {}
+      @populate_params_hash = true
       @translate_case = false
       @auto_class_mapping = false
       @use_array_collection = false
       @hash_key_access = :symbol
       @preload_models = []
-      @param_mappings = {}
     end
 
     def map_params options

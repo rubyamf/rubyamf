@@ -1,6 +1,24 @@
 module RubyAMF
   module Rails
-    class RequestProcessor < RubyAMF::RequestProcessor
+    class RequestProcessor
+      def initialize app
+        @app = app
+      end
+
+      # Processes the AMF request and forwards the method calls to the corresponding
+      # rails controllers. No middleware beyond the request processor will receive
+      # anything if the request is a handleable AMF request.
+      def call env
+        return @app.call(env) unless env['rubyamf.response']
+
+        # Handle each method call
+        req = env['rubyamf.request']
+        res = env['rubyamf.response']
+        res.each_method_call req do |method, args|
+          handle_method method, args, env
+        end
+      end
+
       def handle_method method, args, env
         # Parse method and load service
         path = method.split('.')
@@ -8,13 +26,21 @@ module RubyAMF
         controller_name = path.pop
         controller = get_service controller_name, method_name
 
-        # Shared setup
+        # Setup request and controller
         new_env = env.dup
         new_env['HTTP_ACCEPT'] = RubyAMF::MIME_TYPE # Force amf response only
         req = ActionController::Request.new(new_env)
         con = controller.new
 
-        # Rails version-specific setup
+        # Populate with AMF data
+        amf_req = env['rubyamf.request']
+        params_hash = amf_req.params_hash(controller.name, method_name, args)
+        req.params.merge!(params_hash) if RubyAMF.configuration.populate_params_hash
+        con.instance_variable_set("@is_amf", true)
+        con.instance_variable_set("@rubyamf_params", params_hash)
+        con.instance_variable_set("@credentials", amf_req.credentials)
+
+        # Dispatch the request to the controller
         rails_version = ::Rails::VERSION::MAJOR
         if rails_version == 3
           res = con.dispatch(method_name, req)
