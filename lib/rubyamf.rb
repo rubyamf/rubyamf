@@ -37,14 +37,14 @@ module RubyAMF
     end
 
     def bootstrap
-      configuration.do_model_preloading
+      configuration.preload_models.flatten.each {|m| m.to_s.constantize}
+      RubyAMF::ClassMapper.use_array_collection = configuration.use_array_collection # Make sure it gets copied over for RocketAMF
       RubyAMF::Serialization.load_support
-      RubyAMF::ClassMapper # Force it to be defined
     end
 
     def const_missing const #:nodoc:
       if const == :ClassMapper
-        class_mapper = RubyAMF.configuration.class_mapper
+        class_mapper = configuration.class_mapper
         RubyAMF.const_set(:ClassMapper, class_mapper)
         RocketAMF.const_set(:ClassMapper, class_mapper)
       else

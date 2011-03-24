@@ -24,16 +24,11 @@ module RubyAMF
       if @class_mapper.nil?
         @class_mapper = RubyAMF::ClassMapping
       end
-      @class_mapper.use_array_collection = @use_array_collection # Make sure it gets copied over
       @class_mapper
     end
 
     def class_mapper= klass
       @class_mapper = klass
-    end
-
-    def do_model_preloading
-      @preload_models.flatten.each {|m| m.to_s.constantize}
     end
   end
 end
