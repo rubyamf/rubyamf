@@ -1,7 +1,7 @@
 module RubyAMF
   class Configuration
-    # Rack options
-    attr_accessor :gateway_path
+    # Gateway options
+    attr_accessor :gateway_path, :param_mappings
 
     # Serialization options
     attr_accessor :translate_case, :auto_class_mapping, :use_array_collection, :hash_key_access, :preload_models
@@ -13,6 +13,11 @@ module RubyAMF
       @use_array_collection = false
       @hash_key_access = :symbol
       @preload_models = []
+      @param_mappings = {}
+    end
+
+    def map_params options
+      @param_mappings[options[:controller]+"#"+options[:action]] = options[:params]
     end
 
     def class_mapper

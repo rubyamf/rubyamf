@@ -54,7 +54,18 @@ describe RubyAMF::Envelope do
     end
   end
 
-  it "should calculate params hash from configuration"
+  it "should calculate params hash from configuration" do
+    RubyAMF.configuration.map_params :controller => "c", :action => "a", :params => ["param1", :param2]
+    params = @envelope.params_hash "c", "a", ["asdf", "fdsa"]
+    params.should == {:param1 => "asdf", :param2 => "fdsa", 0 => "asdf", 1 => "fdsa"}
+  end
+
+  it "should respect hash_key_access for params hash" do
+    RubyAMF.configuration.hash_key_access = :string
+    RubyAMF.configuration.map_params :controller => "c", :action => "a", :params => ["param1", :param2]
+    params = @envelope.params_hash "c", "a", ["asdf", "fdsa"]
+    params.should == {"param1" => "asdf", "param2" => "fdsa", 0 => "asdf", 1 => "fdsa"}
+  end
 
   it "should expose credentials set through NetConnection credentials header" do
     req = create_envelope('requestWithOldCredentials.bin')

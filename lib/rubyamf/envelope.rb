@@ -35,6 +35,20 @@ module RubyAMF
       {username_key => nil, password_key => nil}
     end
 
+    def params_hash controller, action, arguments
+      conf = RubyAMF.configuration
+      mapped = {}
+      mapping = conf.param_mappings[controller+"#"+action]
+      arguments.each_with_index do |arg, i|
+        mapped[i] = arg
+        if mapping
+          mapping_key = conf.hash_key_access == :symbol ? mapping[i].to_sym : mapping[i].to_s
+          mapped[mapping_key] = arg
+        end
+      end
+      mapped
+    end
+
     def dispatch_call p
       begin
         ret = p[:block].call(p[:method], p[:args])
