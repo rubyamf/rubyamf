@@ -5,6 +5,7 @@ describe RubyAMF::Envelope do
     @envelope = RubyAMF::Envelope.new
     @logger = mock(RubyAMF::Logger)
     @logger.stub!("log_error")
+    RubyAMF.configuration = RubyAMF::Configuration.new # Reset configuration
   end
 
   def create_envelope fixture
@@ -68,5 +69,15 @@ describe RubyAMF::Envelope do
   it "should return empty credentials if unset" do
     req = create_envelope('remotingMessage.bin')
     req.credentials.should == {:username => nil, :password => nil}
+  end
+
+  it "should respect hash_key_access config for credentials" do
+    RubyAMF.configuration.hash_key_access = :string
+    req = create_envelope('requestWithOldCredentials.bin')
+    req.credentials.should == {"username" => "username", "password" => "password"}
+    req = create_envelope('requestWithNewCredentials.bin')
+    req.credentials.should == {"username" => "username", "password" => "password"}
+    req = create_envelope('remotingMessage.bin')
+    req.credentials.should == {"username" => nil, "password" => nil}
   end
 end

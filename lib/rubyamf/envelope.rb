@@ -3,24 +3,36 @@ require 'base64'
 module RubyAMF
   class Envelope < RocketAMF::Envelope
     def credentials
+      if RubyAMF.configuration.hash_key_access == :symbol
+        userid_key = :userid
+        username_key = :username
+        password_key = :password
+        ds_cred_key = :DSRemoteCredentials
+      else
+        userid_key = "userid"
+        username_key = "username"
+        password_key = "password"
+        ds_cred_key = "DSRemoteCredentials"
+      end
+
       # Old style setHeader('Credentials', CREDENTIALS_HASH)
       if @headers['Credentials']
         h = @headers['Credentials']
-        return {:username => h.data[:userid], :password => h.data[:password]}
+        return {username_key => h.data[userid_key], password_key => h.data[password_key]}
       end
 
       # New style DSRemoteCredentials
       messages.each do |m|
         if m.data.is_a?(RocketAMF::Values::RemotingMessage)
-          if m.data.headers && m.data.headers[:DSRemoteCredentials]
-            username,password = Base64.decode64(m.data.headers[:DSRemoteCredentials]).split(':')
-            return {:username => username, :password => password}
+          if m.data.headers && m.data.headers[ds_cred_key]
+            username,password = Base64.decode64(m.data.headers[ds_cred_key]).split(':')
+            return {username_key => username, password_key => password}
           end
         end
       end
 
       # Failure case sends empty credentials, because rubyamf_plugin does it
-      {:username => nil, :password => nil}
+      {username_key => nil, password_key => nil}
     end
 
     def dispatch_call p
