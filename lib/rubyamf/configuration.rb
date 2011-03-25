@@ -4,7 +4,8 @@ module RubyAMF
     attr_accessor :gateway_path, :param_mappings, :populate_params_hash
 
     # Serialization options
-    attr_accessor :translate_case, :auto_class_mapping, :use_array_collection, :hash_key_access, :preload_models
+    attr_accessor :translate_case, :auto_class_mapping, :use_array_collection,
+                  :hash_key_access, :preload_models, :check_for_associations
 
     def initialize
       @gateway_path = "/rubyamf/gateway"
@@ -15,6 +16,7 @@ module RubyAMF
       @use_array_collection = false
       @hash_key_access = :symbol
       @preload_models = []
+      @check_for_associations = true
     end
 
     def map_params options
