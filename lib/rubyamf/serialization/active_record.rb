@@ -17,12 +17,11 @@ module RubyAMF
           if include_associations.is_a?(Hash)
             auto_include.each {|assoc| include_associations[assoc] ||= {}}
           else
-            include_associations = Array.wrap(include_associations)
-            auto_include.each {|assoc| include_associations << assoc unless include_associations.include?(assoc)}
+            include_associations = Array.wrap(include_associations) | auto_include
           end
           options[:include] = include_associations
         else
-          options[:include] = auto_include
+          options[:include] = auto_include if auto_include.length > 0
         end
 
         super(options)
