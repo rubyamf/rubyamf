@@ -100,6 +100,12 @@ describe RubyAMF::Serialization do
     RubyAMF.const_set(:ClassMapper, old_mapper)
   end
 
+  it "should ignore configured fields unless specifically included" do
+    RubyAMF.configuration.ignore_fields << "prop_a"
+    SerTestClass.new.rubyamf_hash.should == {"prop_b" => "fdsa"}
+    SerTestClass.new.rubyamf_hash(:only => ["prop_a", "prop_b"]).should == {"prop_a" => "asdf", "prop_b" => "fdsa"}
+  end
+
   describe 'activerecord' do
     it "should support serializing associations" do
       h = Parent.first.rubyamf_hash(:include => [:children])
