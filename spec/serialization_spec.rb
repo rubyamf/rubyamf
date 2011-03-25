@@ -17,6 +17,7 @@ end
 describe RubyAMF::Serialization do
   before :each do
     RubyAMF::ClassMapper.reset
+    RubyAMF.configuration = RubyAMF::Configuration.new
   end
 
   it "should map ruby class to flash class" do
@@ -71,7 +72,11 @@ describe RubyAMF::Serialization do
   it "should properly process includes" do
     t = SerTestClass.new
     t.should_receive(:courses).and_return([SerTestClass.new])
-    t.rubyamf_hash(:except => "prop_a", :include => :courses).should == {"prop_b" => "fdsa", "courses" => [{"prop_b" => "fdsa"}]}
+    h = t.rubyamf_hash(:except => "prop_a", :include => :courses)
+    h.keys.sort.should == ["courses", "prop_b"]
+    h["prop_b"].should == "fdsa"
+    h["courses"].length.should == 1
+    h["courses"][0].options.should == {:except => "prop_a", :only => nil}
   end
 
   it "should work with RocketAMF class mapper" do
@@ -93,5 +98,19 @@ describe RubyAMF::Serialization do
     # Swap old class mapper back in
     RubyAMF.send(:remove_const, :ClassMapper)
     RubyAMF.const_set(:ClassMapper, old_mapper)
+  end
+
+  describe 'activerecord' do
+    it "should support serializing associations" do
+      h = Parent.first.rubyamf_hash(:include => [:children])
+      h["children"].length.should == 2
+    end
+
+    it "should support automatically including loaded relations without belongs_to" do
+      p = Parent.first
+      p.rubyamf_hash.should == {"id" => 1, "name" => "parent"}
+      p.children.to_a # Force it to load
+      p.rubyamf_hash["children"].length.should == 2
+    end
   end
 end

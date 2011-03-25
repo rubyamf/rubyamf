@@ -9,6 +9,7 @@ module RubyAMF
         # Iterate through assocations and check to see if they are loaded
         auto_include = []
         self.class.reflect_on_all_associations.each do |reflection|
+          next if reflection.macro == :belongs_to # Skip belongs_to to prevent recursion
           auto_include << reflection.name if send(reflection.name).loaded?
         end
 

@@ -90,7 +90,7 @@ module RubyAMF
         include_has_options = include_associations.is_a?(Hash)
         associations = include_has_options ? include_associations.keys : Array.wrap(include_associations)
 
-        # Call rubyamf_hash on each element in the association, passing processed options
+        # Call to_amf on each object in the association, passing processed options
         for association in associations
           records = rubyamf_retrieve_association(association)
           unless records.nil?
@@ -98,9 +98,9 @@ module RubyAMF
             opts = options.merge(association_options)
 
             if records.is_a?(Enumerable)
-              hash[association.to_s] = records.map {|r| r.rubyamf_hash(opts)}
+              hash[association.to_s] = records.map {|r| r.to_amf(opts)}
             else
-              hash[association.to_s] = records.rubyamf_hash(opts)
+              hash[association.to_s] = records.to_amf(opts)
             end
           end
         end
