@@ -110,7 +110,9 @@ describe RubyAMF::Serialization do
       p = Parent.first
       p.rubyamf_hash.should == {"id" => 1, "name" => "parent"}
       p.children.to_a # Force it to load
-      p.rubyamf_hash["children"].length.should == 2
+      h = p.rubyamf_hash
+      h["children"].length.should == 2
+      h["children"][0].rubyamf_hash.should == {"id" => 1, "name" => "child 1", "parent_id" => 1}
     end
   end
 end
