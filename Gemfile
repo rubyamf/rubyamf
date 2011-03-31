@@ -1,7 +1,9 @@
 source "http://rubygems.org"
 
+# Specify your gem's dependencies in rubyamf.gemspec
+gemspec
+
 gem 'rspec'
-gem 'activesupport'
 gem 'sqlite3-ruby'
-gem 'activerecord'
+gem 'activerecord', '>= 2.3'
 gem "RocketAMF", :git => "git://github.com/warhammerkid/rocket-amf.git", :branch => "experiment"
