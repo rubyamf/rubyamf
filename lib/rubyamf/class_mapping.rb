@@ -75,6 +75,8 @@ module RubyAMF
       @mappings ||= RubyAMF::MappingSet.new
     end
 
+    attr_accessor :mapping_scope # nil uses proper default calculations
+
     def get_as_class_name obj
       # Get class name
       if obj.is_a?(String)
@@ -146,7 +148,7 @@ module RubyAMF
         if ruby_obj.is_a?(RubyAMF::IntermediateObject)
           props = ruby_obj.rubyamf_hash
         else
-          config = @mappings.serialization_config(ruby_obj.class.name)
+          config = @mappings.serialization_config(ruby_obj.class.name, mapping_scope)
           props = ruby_obj.rubyamf_hash config
         end
       else

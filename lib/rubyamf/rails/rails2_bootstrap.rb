@@ -6,6 +6,7 @@ class ActionController::Base
     if options && options.is_a?(Hash) && options.has_key?(:amf)
       @performed_render = true
       @amf_response = options[:amf]
+      @mapping_scope = options[:class_mapping_scope] || options[:mapping_scope] || nil
     else
       render_without_amf(options, extra_options, &block)
     end

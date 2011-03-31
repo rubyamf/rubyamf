@@ -50,6 +50,9 @@ module RubyAMF
           con.process(req, ActionController::Response.new)
         end
 
+        # Copy mapping scope over to response so it can be used when serialized
+        env['rubyamf.response'].mapping_scope = con.send(:mapping_scope)
+
         return con.send(:amf_response)
       end
 

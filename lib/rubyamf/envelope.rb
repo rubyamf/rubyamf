@@ -2,6 +2,8 @@ require 'base64'
 
 module RubyAMF
   class Envelope < RocketAMF::Envelope
+    attr_accessor :mapping_scope
+
     def credentials
       if RubyAMF.configuration.hash_key_access == :symbol
         userid_key = :userid
@@ -64,6 +66,12 @@ module RubyAMF
         # Create ErrorMessage object using the source message as the base
         RocketAMF::Values::ErrorMessage.new(p[:source], e)
       end
+    end
+
+    def serialize class_mapper=nil
+      cm = class_mapper || RubyAMF::ClassMapper.new
+      cm.mapping_scope = mapping_scope if cm.respond_to?(:mapping_scope=)
+      super cm
     end
   end
 end
