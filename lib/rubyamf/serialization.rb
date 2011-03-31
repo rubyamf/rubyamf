@@ -99,13 +99,11 @@ module RubyAMF
         for association in associations
           records = rubyamf_retrieve_association(association)
           unless records.nil?
-            association_options = include_has_options ? include_associations[association] : base_only_or_except
-            opts = options.merge(association_options)
-
+            opts = include_has_options ? include_associations[association] : nil
             if records.is_a?(Enumerable)
-              hash[association.to_s] = records.map {|r| r.to_amf(opts)}
+              hash[association.to_s] = records.map {|r| opts.nil? ? r : r.to_amf(opts)}
             else
-              hash[association.to_s] = records.to_amf(opts)
+              hash[association.to_s] = opts.nil? ? records : records.to_amf(opts)
             end
           end
         end

@@ -69,14 +69,24 @@ describe RubyAMF::Serialization do
     }.should raise_error
   end
 
-  it "should properly process includes" do
+  it "should properly process generic includes" do
     t = SerTestClass.new
     t.should_receive(:courses).and_return([SerTestClass.new])
     h = t.rubyamf_hash(:except => "prop_a", :include => :courses)
     h.keys.sort.should == ["courses", "prop_b"]
     h["prop_b"].should == "fdsa"
     h["courses"].length.should == 1
-    h["courses"][0].options.should == {:except => "prop_a", :only => nil}
+    h["courses"][0].class.should == SerTestClass
+  end
+
+  it "should convert configured includes to IntermediateObjects" do
+    t = SerTestClass.new
+    t.should_receive(:courses).and_return([SerTestClass.new])
+    h = t.rubyamf_hash(:except => "prop_a", :include => {:courses => {:except => "prop_b"}})
+    h.keys.sort.should == ["courses", "prop_b"]
+    h["prop_b"].should == "fdsa"
+    h["courses"].length.should == 1
+    h["courses"][0].options.should == {:except => "prop_b"}
   end
 
   it "should work with RocketAMF class mapper" do
