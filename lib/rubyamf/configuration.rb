@@ -21,8 +21,8 @@ module RubyAMF
       @ignore_fields = ['created_at', 'created_on', 'updated_at', 'updated_on']
     end
 
-    def map_params options
-      @param_mappings[options[:controller]+"#"+options[:action]] = options[:params]
+    def map_params controller, action, params
+      @param_mappings[controller+"#"+action] = params
     end
 
     def class_mapper

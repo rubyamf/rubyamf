@@ -1,5 +1,6 @@
 require 'rubyamf/rails/action_controller'
 require 'rubyamf/rails/request_processor'
+require 'rubyamf/rails/routing'
 
 # Hook up rendering
 ActionController::Renderers.add :amf do |amf, options|

@@ -1,5 +1,6 @@
 require 'rubyamf/rails/action_controller'
 require 'rubyamf/rails/request_processor'
+require 'rubyamf/rails/routing'
 
 class ActionController::Base
   def render_with_amf(options = nil, extra_options ={}, &block)
