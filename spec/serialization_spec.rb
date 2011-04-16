@@ -14,6 +14,38 @@ class NonConformingClass
   include RubyAMF::Serialization
 end
 
+ActiveRecord::Schema.define do
+  create_table "parents" do |t|
+    t.string "name"
+  end
+  create_table "homes" do |t|
+    t.string "address"
+    t.integer "parent_id"
+  end
+  create_table "children" do |t|
+    t.string "name"
+    t.integer "parent_id"
+  end
+end
+
+class Parent < ActiveRecord::Base
+  has_many :children
+  has_one :home
+end
+
+class Home < ActiveRecord::Base
+  belongs_to :parent
+end
+
+class Child < ActiveRecord::Base
+  belongs_to :parent
+end
+
+p = Parent.create :name => "parent"
+p.children.create :name => "child 1"
+p.children.create :name => "child 2"
+p.home = Home.create :address => "1234 Main St."
+
 describe RubyAMF::Serialization do
   before :each do
     RubyAMF::ClassMapper.reset
@@ -122,13 +154,25 @@ describe RubyAMF::Serialization do
       h["children"].length.should == 2
     end
 
+    it "should support serializing associations with configurations" do
+      h = Parent.first.rubyamf_hash(:include => {:children => {:only => "name"}})
+      h["children"].length.should == 2
+    end
+
     it "should support automatically including loaded relations without belongs_to" do
+      # No associations pre-loaded
       p = Parent.first
       p.rubyamf_hash.should == {"id" => 1, "name" => "parent"}
-      p.children.to_a # Force it to load
+
+      # Force associations to load
+      p.children.to_a
+      p.home
+
+      # Associations should be in hash
       h = p.rubyamf_hash
       h["children"].length.should == 2
       h["children"][0].rubyamf_hash.should == {"id" => 1, "name" => "child 1", "parent_id" => 1}
+      h["home"].should == p.home
     end
   end
 end

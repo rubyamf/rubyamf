@@ -10,7 +10,12 @@ module RubyAMF
         auto_include = []
         self.class.reflect_on_all_associations.each do |reflection|
           next if reflection.macro == :belongs_to # Skip belongs_to to prevent recursion
-          auto_include << reflection.name if send(reflection.name).loaded?
+          is_loaded = if self.respond_to?("loaded_#{reflection.name}?")
+            send("loaded_#{reflection.name}?")
+          else
+            send(reflection.name).loaded?
+          end
+          auto_include << reflection.name if is_loaded
         end
 
         # Add these assocations to the :include if they are not already there
@@ -28,7 +33,7 @@ module RubyAMF
         super(options)
       end
 
-      def rubyamf_association association
+      def rubyamf_retrieve_association association
         case self.class.reflect_on_association(association).macro
         when :has_many, :has_and_belongs_to_many
           send(association).to_a
