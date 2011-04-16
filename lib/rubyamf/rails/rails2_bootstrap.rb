@@ -1,7 +1,18 @@
-require 'rubyamf/rails/action_controller'
+require 'rubyamf/rails/controller'
 require 'rubyamf/rails/request_processor'
 require 'rubyamf/rails/routing'
+require 'action_controller'
 
+# Hook up MIME type
+Mime::Type.register RubyAMF::MIME_TYPE, :amf
+
+# Hook routing into routes
+ActionController::Routing::RouteSet::Mapper.send(:include, RubyAMF::Rails::Routing)
+
+# Add some utility methods to ActionController
+ActionController::Base.send(:include, RubyAMF::Rails::Controller)
+
+# Hook up rendering
 class ActionController::Base
   def render_with_amf(options = nil, extra_options ={}, &block)
     if options && options.is_a?(Hash) && options.has_key?(:amf)

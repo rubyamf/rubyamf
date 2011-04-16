@@ -1,6 +1,16 @@
-require 'rubyamf/rails/action_controller'
+require 'rubyamf/rails/controller'
 require 'rubyamf/rails/request_processor'
 require 'rubyamf/rails/routing'
+require 'action_controller'
+
+# Hook up MIME type
+Mime::Type.register RubyAMF::MIME_TYPE, :amf
+
+# Hook routing into routes
+ActionDispatch::Routing::Mapper.send(:include, RubyAMF::Rails::Routing)
+
+# Add some utility methods to ActionController
+ActionController::Base.send(:include, RubyAMF::Rails::Controller)
 
 # Hook up rendering
 ActionController::Renderers.add :amf do |amf, options|
