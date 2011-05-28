@@ -45,7 +45,7 @@ module RubyAMF
         end
 
         # Add config to scope hash
-        mapping.scopes[scope] = serialization_config
+        mapping.scopes[scope.to_sym] = serialization_config
       end
     end
 
@@ -65,7 +65,7 @@ module RubyAMF
         nil
       else
         scope ||= mapping.default_scope
-        mapping.scopes[scope]
+        mapping.scopes[scope.to_sym]
       end
     end
   end
