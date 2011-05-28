@@ -1,7 +1,7 @@
 module RubyAMF
-  module Serialization
+  module Model
     PLUGINS = {
-      "ActiveRecord::Base" => 'rubyamf/serialization/active_record'
+      "ActiveRecord::Base" => 'rubyamf/model/active_record'
     }
 
     def self.included base
@@ -56,6 +56,14 @@ module RubyAMF
       end
     end
 
+    def rubyamf_init props, dynamic_props = nil
+      raise "Must implement attributes= method for default rubyamf_init to work" unless respond_to?(:attributes=)
+
+      initialize # warhammerkid: Call initialize by default - good decision?
+      props.merge!(dynamic_props) if dynamic_props
+      send(:attributes=, props) # Populate using attributes setter
+    end
+
     def rubyamf_hash options=nil
       raise "Must implement attributes method for rubyamf_hash to work" unless respond_to?(:attributes)
 
@@ -96,9 +104,9 @@ module RubyAMF
         associations = include_has_options ? include_associations.keys : Array.wrap(include_associations)
 
         # Call to_amf on each object in the association, passing processed options
-        for association in associations
+        associations.each do |association|
           records = rubyamf_retrieve_association(association)
-          unless records.nil?
+          if records
             opts = include_has_options ? include_associations[association] : nil
             if records.is_a?(Enumerable)
               hash[association.to_s] = records.map {|r| opts.nil? ? r : r.to_amf(opts)}

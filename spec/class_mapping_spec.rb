@@ -33,7 +33,18 @@ describe RubyAMF::MappingSet do
 end
 
 class UnmappedClass; end
-class MappingTestClass; end
+class MappingTestClass
+  def initialize
+    @initialized = true
+  end
+
+  def initialized?
+    @initialized
+  end
+end
+class MappingModelTestClass < MappingTestClass
+  def rubyamf_init; end
+end
 
 describe RubyAMF::ClassMapping do
   before :each do
@@ -103,5 +114,16 @@ describe RubyAMF::ClassMapping do
     obj.should_receive(:rubyamf_hash).with({:only => "asdf"}).and_return({"asdf" => "fdsa"})
     props = @mapper.props_for_serialization(obj)
     props.should == {"asdf" => "fdsa"}
+  end
+
+  it "should not call initialize on rubyamf_init implementors" do
+    @set.map :as => "MappingTestClass", :ruby => "MappingTestClass"
+    @set.map :as => "MappingModelTestClass", :ruby => "MappingModelTestClass"
+
+    obj = @mapper.get_ruby_obj("MappingTestClass")
+    obj.initialized?.should == true
+
+    obj = @mapper.get_ruby_obj("MappingModelTestClass")
+    obj.initialized?.should_not == true
   end
 end

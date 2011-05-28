@@ -1,0 +1,243 @@
+require "spec_helper.rb"
+
+describe RubyAMF::Model do
+  before :each do
+    RubyAMF::ClassMapper.reset
+    RubyAMF.configuration = RubyAMF::Configuration.new
+  end
+
+  describe 'configuration' do
+    it "should map ruby class to flash class" do
+      ModelTestObject.module_eval do
+        as_class "as"
+        actionscript_class "actionscript"
+        flash_class "flash"
+      end
+      m = RubyAMF::ClassMapper.mappings
+      m.get_as_class_name("ModelTestObject").should == "flash"
+      m.get_ruby_class_name("flash").should == "ModelTestObject"
+    end
+
+    it "should save serialization configs to class mapper" do
+      ModelTestObject.module_eval do
+        as_class "com.test.ASClass"
+        map_amf :only => "prop_a"
+        map_amf :testing, :only => "prop_b"
+        map_amf :default_scope => :asdf, :only => "prop_c"
+      end
+      m = RubyAMF::ClassMapper.mappings
+      m.get_as_class_name("ModelTestObject").should == "com.test.ASClass"
+      m.get_ruby_class_name("com.test.ASClass").should == "ModelTestObject"
+      m.serialization_config("ModelTestObject", :default).should == {:only => "prop_a"}
+      m.serialization_config("ModelTestObject", :testing).should == {:only => "prop_b"}
+      m.serialization_config("ModelTestObject", :asdf).should == {:only => "prop_c"}
+    end
+
+    it "should work with RocketAMF class mapper" do
+      # Swap out class mapper
+      old_mapper = RubyAMF.send(:remove_const, :ClassMapper)
+      RubyAMF.const_set(:ClassMapper, RocketAMF::ClassMapping)
+
+      # Test it
+      ModelTestObject.module_eval do
+        as_class "com.test.ASClass"
+        map_amf :only => "prop_a"
+        map_amf :testing, :only => "prop_b"
+        map_amf :default_scope => :asdf, :only => "prop_c"
+      end
+      m = RubyAMF::ClassMapper.mappings
+      m.get_as_class_name("ModelTestObject").should == "com.test.ASClass"
+      m.get_ruby_class_name("com.test.ASClass").should == "ModelTestObject"
+
+      # Swap old class mapper back in
+      RubyAMF.send(:remove_const, :ClassMapper)
+      RubyAMF.const_set(:ClassMapper, old_mapper)
+    end
+  end
+
+  describe 'deserialization' do
+    it "should populate properly from deserialization" do
+      t = ModelTestObject.allocate
+      t.rubyamf_init({"prop_a" => "seta"}, {"prop_b" => "setb"}) # classmapper would pass symbolic keys - oh well?
+      t.attributes.should == {"prop_a" => "seta", "prop_b" => "setb"}
+    end
+  end
+
+  describe 'serialization' do
+    it "should return an IntermediateObject when to_amf is called" do
+      t = ModelTestObject.new
+      obj = t.to_amf({:only => "prop_a"})
+      obj.should be_a(RubyAMF::IntermediateObject)
+      obj.object.should == t
+      obj.options.should == {:only => "prop_a"}
+    end
+
+    it "should convert conforming object to serializable hash" do
+      t = ModelTestObject.new
+      t.rubyamf_hash.should == t.attributes
+      t.rubyamf_hash(:only => "prop_a").should == {"prop_a" => "asdf"}
+      t.rubyamf_hash(:except => ["prop_a"]).should == {"prop_b" => "fdsa"}
+      t.rubyamf_hash(:methods => :a_method).should == {"prop_a" => "asdf", "prop_b" => "fdsa", "a_method" => "result"}
+    end
+
+    it "should raise exception if object does not conform" do
+      class NonConformingObject
+        include RubyAMF::Model
+      end
+      a = NonConformingObject.new
+      lambda {
+        a.rubyamf_hash
+      }.should raise_error
+    end
+
+    it "should properly process generic includes" do
+      t = ModelTestObject.new
+      t.should_receive(:courses).and_return([ModelTestObject.new])
+      h = t.rubyamf_hash(:except => "prop_a", :include => :courses)
+      h.keys.sort.should == ["courses", "prop_b"]
+      h["prop_b"].should == "fdsa"
+      h["courses"].length.should == 1
+      h["courses"][0].class.should == ModelTestObject
+    end
+
+    it "should convert configured includes to IntermediateObjects" do
+      t = ModelTestObject.new
+      t.should_receive(:courses).and_return([ModelTestObject.new])
+      h = t.rubyamf_hash(:except => "prop_a", :include => {:courses => {:except => "prop_b"}})
+      h.keys.sort.should == ["courses", "prop_b"]
+      h["prop_b"].should == "fdsa"
+      h["courses"].length.should == 1
+      h["courses"][0].options.should == {:except => "prop_b"}
+    end
+
+    it "should ignore configured fields unless specifically included" do
+      RubyAMF.configuration.ignore_fields << "prop_a"
+      ModelTestObject.new.rubyamf_hash.should == {"prop_b" => "fdsa"}
+      ModelTestObject.new.rubyamf_hash(:only => ["prop_a", "prop_b"]).should == {"prop_a" => "asdf", "prop_b" => "fdsa"}
+    end
+  end
+
+  # Need to run these tests against rails 2.3, 3.0, and 3.1
+  describe 'ActiveRecord' do
+    describe 'deserialization' do
+      it "should create new records if no id given" do
+        c = Child.allocate
+        c.rubyamf_init({:name => "Foo Bar"})
+        c.name.should == "Foo Bar"
+        c.new_record?.should == true
+        c.changed.should == ["name"]
+      end
+
+      it "should determine whether a record is new if composite PK" do
+        # Create composite child in DB
+        c = CompositeChild.new
+        c.id = [10, "blah"]
+        c.save
+
+        # Check it
+        c = CompositeChild.allocate
+        c.rubyamf_init({:id => 10, :name => "blah"})
+        c.id.should == [10, "blah"]
+        c.new_record?.should == false
+        c.changed.should == []
+      end
+
+      it "should deserialize associations" do
+        p = Parent.allocate
+        c = Child.allocate
+        c.rubyamf_init({:name => "Foo Bar"})
+        p.rubyamf_init({:name => "parent", :children => [c]})
+        p.children.length.should == 1
+        p.save
+        p.children[0].parent_id.should == p.id
+      end
+
+      it "should properly initialize 'existing' objects" do
+        c = Child.allocate
+        c.rubyamf_init({:id => 5, :name => "Bar Foo"})
+        c.id.should == 5
+        c.name.should == "Bar Foo"
+        c.new_record?.should == false
+        c.changed.should == ["name"]
+      end
+
+      it "should properly initialize STI objects"
+    end
+
+    describe 'serialiazation' do
+      it "should support serializing associations" do
+        h = Parent.first.rubyamf_hash(:include => [:children])
+        h["children"].length.should == 2
+      end
+
+      it "should support serializing associations with configurations" do
+        h = Parent.first.rubyamf_hash(:include => {:children => {:only => "name"}})
+        h["children"].length.should == 2
+      end
+
+      it "should support automatically including loaded relations without belongs_to" do
+        # No associations pre-loaded
+        p = Parent.first
+        p.rubyamf_hash.should == {"id" => 1, "name" => "parent"}
+
+        # Force associations to load
+        p.children.to_a
+        p.home
+
+        # Associations should be in hash
+        h = p.rubyamf_hash
+        h["children"].length.should == 2
+        h["children"][0].rubyamf_hash.should == {"id" => 1, "name" => "child 1", "parent_id" => 1}
+        h["home"].should == p.home
+      end
+    end
+  end
+end
+
+class ModelTestObject
+  include RubyAMF::Model
+  attr_accessor :attributes
+  def initialize
+    @attributes = {"prop_a" => "asdf", "prop_b" => "fdsa"}
+  end
+  def a_method
+    "result"
+  end
+end
+
+ActiveRecord::Schema.define do
+  create_table "parents" do |t|
+    t.string "name"
+  end
+  create_table "homes" do |t|
+    t.string "address"
+    t.integer "parent_id"
+  end
+  create_table "children" do |t|
+    t.string "name"
+    t.integer "parent_id"
+  end
+end
+
+class Parent < ActiveRecord::Base
+  has_many :children
+  has_one :home
+end
+
+class Home < ActiveRecord::Base
+  belongs_to :parent
+end
+
+class Child < ActiveRecord::Base
+  belongs_to :parent
+end
+
+class CompositeChild < ActiveRecord::Base
+  set_table_name "children"
+  set_primary_keys :id, :name
+end
+
+p = Parent.create :name => "parent"
+p.children.create :name => "child 1"
+p.children.create :name => "child 2"
+p.home = Home.create :address => "1234 Main St."

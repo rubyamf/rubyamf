@@ -118,7 +118,9 @@ module RubyAMF
         return RocketAMF::Values::TypedHash.new(as_class_name)
       else
         ruby_class = ruby_class_name.constantize
-        return ruby_class.new
+        obj = ruby_class.allocate
+        obj.send(:initialize) unless obj.respond_to?(:rubyamf_init) # warhammerkid: Should we check if it has initialize?
+        return obj
       end
     end
 
@@ -137,6 +139,13 @@ module RubyAMF
         dynamic_props = dynamic_props.inject({}, &key_change) if dynamic_props
       end
 
+      # Handle custom init
+      if obj.respond_to?(:rubyamf_init)
+        obj.rubyamf_init props, dynamic_props
+        return
+      end
+
+      # Fall through to default populator
       super(obj, props, dynamic_props)
     end
 

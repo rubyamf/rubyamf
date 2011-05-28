@@ -6,4 +6,5 @@ gemspec
 gem 'rspec'
 gem 'sqlite3-ruby'
 gem 'activerecord', '>= 2.3'
-gem "RocketAMF", :git => "git://github.com/warhammerkid/rocket-amf.git", :branch => "experiment"
+gem 'composite_primary_keys', '>= 2.3'
+gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"

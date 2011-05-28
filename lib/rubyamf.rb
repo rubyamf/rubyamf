@@ -6,7 +6,7 @@ require 'rubyamf/logger'
 require 'rubyamf/fault'
 require 'rubyamf/intermediate_object'
 require 'rubyamf/class_mapping'
-require 'rubyamf/serialization'
+require 'rubyamf/model'
 require 'rubyamf/configuration'
 require 'rubyamf/envelope'
 require 'rubyamf/request_parser'
@@ -38,7 +38,7 @@ module RubyAMF
     def bootstrap
       configuration.preload_models.flatten.each {|m| m.to_s.constantize}
       RubyAMF::ClassMapper.use_array_collection = configuration.use_array_collection # Make sure it gets copied over for RocketAMF
-      RubyAMF::Serialization.load_support
+      RubyAMF::Model.load_support
     end
 
     def const_missing const #:nodoc:
