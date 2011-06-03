@@ -34,7 +34,16 @@ end
 
 module RubyAMF::Rails2
   def bootstrap
+    # Load legacy config if they have one
+    begin
+      RubyAMF.configuration.load_legacy
+    rescue
+      RubyAMF.logger.info "RubyAMF: Could not find legacy config file to load"
+    end
+
     super
+
+    # Rails specific bootstrapping
     m = ::Rails.configuration.middleware
     m.use RubyAMF::RequestParser
     m.use RubyAMF::Rails::RequestProcessor
