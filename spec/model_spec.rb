@@ -65,6 +65,13 @@ describe RubyAMF::Model do
       t.rubyamf_init({"prop_a" => "seta"}, {"prop_b" => "setb"}) # classmapper would pass symbolic keys - oh well?
       t.attributes.should == {"prop_a" => "seta", "prop_b" => "setb"}
     end
+
+    it "should call setters for non-attributes" do
+      t = ModelTestObject.allocate
+      t.rubyamf_init({"prop_a" => "seta", "settable_method" => "meth"})
+      t.attributes.should == {"prop_a" => "seta"}
+      t.settable_method.should == "meth"
+    end
   end
 
   describe 'serialization' do
@@ -200,7 +207,7 @@ end
 
 class ModelTestObject
   include RubyAMF::Model
-  attr_accessor :attributes
+  attr_accessor :attributes, :settable_method
   def initialize
     @attributes = {"prop_a" => "asdf", "prop_b" => "fdsa"}
   end

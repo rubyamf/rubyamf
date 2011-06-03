@@ -33,8 +33,17 @@ module RubyAMF
       raise "Must implement attributes= method for default rubyamf_init to work" unless respond_to?(:attributes=)
 
       initialize # warhammerkid: Call initialize by default - good decision?
+
+      attrs = self.attributes
       props.merge!(dynamic_props) if dynamic_props
-      send(:attributes=, props) # Populate using attributes setter
+      not_attributes = props.keys.select {|k| !attrs.include?(k)}
+
+      not_attributes.each do |k|
+        setter = "#{k}="
+        next if setter !~ /^[a-z][A-Za-z0-9_]+=/ # Make sure setter doesn't start with capital, dollar, or underscore to make this safer
+        send(setter, props.delete(k)) if respond_to?(setter)
+      end
+      self.attributes = props # Populate using attributes setter
     end
 
     def rubyamf_hash options=nil
