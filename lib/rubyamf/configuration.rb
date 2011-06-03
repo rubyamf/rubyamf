@@ -79,6 +79,7 @@ module RubyAMF
         mapping[:as] = legacy_mapping[:actionscript]
         mapping[:ruby] = legacy_mapping[:ruby]
         mapping[:methods] = legacy_mapping[:methods] unless legacy_mapping[:methods].nil?
+        mapping[:ignore_fields] = legacy_mapping[:ignore_fields] unless legacy_mapping[:ignore_fields].nil?
 
         # Process possibly scoped settings
         attrs = legacy_mapping[:attributes]

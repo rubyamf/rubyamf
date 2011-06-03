@@ -8,7 +8,7 @@ module RubyAMF
       end
     end
 
-    SERIALIZATION_PROPS = [:except, :only, :methods, :include]
+    SERIALIZATION_PROPS = [:except, :only, :methods, :include, :ignore_fields]
 
     def initialize
       @as_mappings = {}
@@ -139,14 +139,24 @@ module RubyAMF
         dynamic_props = dynamic_props.inject({}, &key_change) if dynamic_props
       end
 
+      # Remove ignore_fields if there is a config
+      config = @mappings.serialization_config(obj.class.name, mapping_scope) || {}
+      (config[:ignore_fields] || []).each do |ignore|
+        props.delete(ignore.to_s)
+        props.delete(ignore.to_sym)
+        if dynamic_props
+          dynamic_props.delete(ignore.to_s)
+          dynamic_props.delete(ignore.to_sym)
+        end
+      end
+
       # Handle custom init
       if obj.respond_to?(:rubyamf_init)
         obj.rubyamf_init props, dynamic_props
-        return
+      else
+        # Fall through to default populator
+        super(obj, props, dynamic_props)
       end
-
-      # Fall through to default populator
-      super(obj, props, dynamic_props)
     end
 
     def props_for_serialization ruby_obj
