@@ -1,5 +1,9 @@
 require "spec_helper.rb"
 
+# Include in ActiveRecord because rails bootstrap not triggered in specs
+require "rubyamf/rails/model"
+ActiveRecord::Base.send(:include, RubyAMF::Rails::Model)
+
 describe RubyAMF::Model do
   before :each do
     RubyAMF::ClassMapper.reset

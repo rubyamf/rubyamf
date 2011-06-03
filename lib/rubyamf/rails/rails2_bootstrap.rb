@@ -1,4 +1,5 @@
 require 'rubyamf/rails/controller'
+require 'rubyamf/rails/model'
 require 'rubyamf/rails/request_processor'
 require 'rubyamf/rails/routing'
 require 'action_controller'
@@ -11,6 +12,11 @@ ActionController::Routing::RouteSet::Mapper.send(:include, RubyAMF::Rails::Routi
 
 # Add some utility methods to ActionController
 ActionController::Base.send(:include, RubyAMF::Rails::Controller)
+
+# Hook up ActiveRecord Model extensions
+if defined?(ActiveRecord)
+  ActiveRecord::Base.send(:include, RubyAMF::Rails::Model)
+end
 
 # Hook up rendering
 class ActionController::Base

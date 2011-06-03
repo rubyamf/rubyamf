@@ -1,5 +1,11 @@
-module RubyAMF::Model
-  module ActiveRecord
+module RubyAMF::Rails
+  module Model
+    include RubyAMF::Model
+
+    def self.included base
+      base.send :extend, ClassMethods
+    end
+
     def rubyamf_init props, dynamic_props = nil
       # Convert props and dynamic props to hash with string keys for attributes
       attrs = {}
@@ -99,9 +105,4 @@ module RubyAMF::Model
       end
     end
   end
-end
-
-class ActiveRecord::Base
-  include RubyAMF::Model
-  include RubyAMF::Model::ActiveRecord
 end

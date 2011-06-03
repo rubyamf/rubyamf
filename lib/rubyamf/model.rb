@@ -1,34 +1,7 @@
 module RubyAMF
   module Model
-    PLUGINS = {
-      "ActiveRecord::Base" => 'rubyamf/model/active_record'
-    }
-
     def self.included base
       base.send :extend, ClassMethods
-    end
-
-    # Detect ORMs and load support hooks for them
-    def self.load_support
-      # Key is the constant to look for and value is the file to require to add
-      # support for that ORM. Key is assumed to be a string with support for
-      # namespacing. For example: "ActiveRecord::Base"
-      PLUGINS.each do |const, file|
-        # Is the plugin constant defined?
-        parts = const.split("::")
-        const_is_defined = true
-        base = Object
-        while part = parts.shift
-          if base.const_defined?(part)
-            base = base.const_get(part)
-          else
-            const_is_defined = false
-            break
-          end
-        end
-
-        require file if const_is_defined
-      end
     end
 
     module ClassMethods
