@@ -1,0 +1,102 @@
+== DESCRIPTION:
+
+RubyAMF is a full-featured AMF gateway based off of Rack and supporting advanced
+integration with Rails and other Rack-based frameworks. It includes advanced
+class mapping functionality, like camel to underscore case translation,
+parameter mapping to convert function calls to parameter hashes, hooks for
+processing AMF authentication credentials, and many more features.
+
+== UPGRADE FROM rubyamf_plugin:
+
+1. Delete <tt>RAILS_ROOT/vendor/plugins/rubyamf</tt> or comment out every line in <tt>RAILS_ROOT/vendor/plugins/rubyamf/init.rb</tt>.
+
+2. Add gems to application:
+
+   Bundler:
+    gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
+    gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+
+   environment.rb:
+    config.gem "RocketAMF"
+    config.gem "rubyamf"
+
+3. Configure the endpoint path by adding the following to the end of your <tt>environment.rb</tt> file:
+
+    RubyAMF.configure do |config|
+      config.gateway_path = "/rubyamf/gateway"
+    end
+   
+   The gateway path is no longer specified in <tt>routes.rb</tt>, so you can
+   remove it and <tt>rubyamf_controller.rb</tt> if you want.
+
+4. Try out your application!
+
+   RubyAMF should load your legacy <tt>rubyamf_config.rb</tt> file and you should
+   be on your way.
+
+If you want to learn more about the new features, please check out the demo app
+at (SOMEWHERE) or the RDoc at (SOMEWHERE).
+
+== RAILS 2 INSTALL:
+
+1. Add gems to application:
+
+   Bundler:
+    gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
+    gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+
+   environment.rb:
+    config.gem "RocketAMF"
+    config.gem "rubyamf"
+
+2. Configure the endpoint path by adding the following to the end of your <tt>environment.rb</tt> file:
+
+    RubyAMF.configure do |config|
+      config.gateway_path = "/rubyamf/gateway"
+    end
+
+Check out the demo app at (SOMEWHERE) or the RDoc at (SOMEWHERE) for information
+about configuration and use.
+
+== RAILS 3 INSTALL:
+
+1. Add the gems to your Gemfile:
+
+    gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
+    gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+
+2. Configure the endpoint path by adding the following to your <tt>application.rb</tt>:
+
+    config.rubyamf.gateway_path = "/amf"
+
+Check out the demo app at (SOMEWHERE) or the RDoc at (SOMEWHERE) for information
+about configuration and use.
+
+== OTHER RACK FRAMEWORK INSTALL:
+
+TODO: Write up instructions
+
+== LICENSE:
+
+(The MIT License)
+
+Copyright (c) 2011 Stephen Augenstein
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
