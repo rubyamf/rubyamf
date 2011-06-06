@@ -25,13 +25,21 @@ module RubyAMF::Rails
         is_new = false unless attrs['id'] == 0 || attrs['id'] == nil
       end
 
+      # Get base attributes hash for later use
+      base_attrs = self.send(:attributes_from_column_definition)
+
       if is_new
         # Call initialize to populate everything for a new object
         self.send(:initialize)
+
+        # Populate part of given primary key
+        pk.each do |k|
+          self.send("#{k}=", attrs[k]) unless attrs[k].nil?
+        end
       else
         # Initialize with defaults so that changed properties will be marked dirty
         pk_attrs = pk.inject({}) {|h, k| h[k] = attrs[k]; h}
-        base_attrs = self.send(:attributes_from_column_definition).merge(pk_attrs)
+        base_attrs.merge!(pk_attrs)
 
         if ::ActiveRecord::VERSION::MAJOR == 2
           # if rails 2, use code from ActiveRecord::Base#instantiate (just copied it over)
@@ -52,8 +60,19 @@ module RubyAMF::Rails
         end
       end
 
-      # Delete pk from attrs and set attributes
+      # Delete pk from attrs as they have already been set
       pk.each {|k| attrs.delete(k)}
+
+      # Call setters for non attributes
+      # warhammerkid: Should we be setting associations some other way (not attributes)?
+      not_attributes = attrs.keys.select {|k| !base_attrs.include?(k)}
+      not_attributes.each do |k|
+        setter = "#{k}="
+        next if setter !~ /^[a-z][A-Za-z0-9_]+=/ # Make sure setter doesn't start with capital, dollar, or underscore to make this safer
+        send(setter, attrs.delete(k)) if respond_to?(setter)
+      end
+
+      # Call attributes= for remaining attributes
       self.send(:attributes=, attrs)
 
       self

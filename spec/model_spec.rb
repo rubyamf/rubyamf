@@ -172,6 +172,13 @@ describe RubyAMF::Model do
         c.changed.should == ["name"]
       end
 
+      it "should call setters for unknown properties" do
+        c = Child.allocate
+        c.rubyamf_init({:name => "Foo Bar", :meth => "method_test"})
+        c.name.should == "Foo Bar"
+        c.meth.should == "method_test"
+      end
+
       it "should properly initialize STI objects"
     end
 
@@ -241,6 +248,7 @@ end
 
 class Child < ActiveRecord::Base
   belongs_to :parent
+  attr_accessor :meth
 end
 
 class CompositeChild < ActiveRecord::Base
