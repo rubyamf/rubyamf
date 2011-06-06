@@ -5,16 +5,16 @@ module RubyAMF
     attr_accessor :mapping_scope
 
     def credentials
+      ds_cred_key = RubyAMF.configuration.translate_case ? "ds_remote_credentials" : "DSRemoteCredentials"
       if RubyAMF.configuration.hash_key_access == :symbol
         userid_key = :userid
         username_key = :username
         password_key = :password
-        ds_cred_key = :DSRemoteCredentials
+        ds_cred_key = ds_cred_key.to_sym
       else
         userid_key = "userid"
         username_key = "username"
         password_key = "password"
-        ds_cred_key = "DSRemoteCredentials"
       end
 
       # Old style setHeader('Credentials', CREDENTIALS_HASH)

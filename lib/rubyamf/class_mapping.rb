@@ -126,7 +126,7 @@ module RubyAMF
 
     def populate_ruby_obj obj, props, dynamic_props=nil
       # Translate case of properties before passing down to super
-      if RubyAMF.configuration.translate_case
+      if RubyAMF.configuration.translate_case && !obj.is_a?(RocketAMF::Values::AbstractMessage)
         case_translator = lambda {|injected, pair| injected[pair[0].to_s.underscore.to_sym] = pair[1]; injected}
         props = props.inject({}, &case_translator)
         dynamic_props = dynamic_props.inject({}, &case_translator) if dynamic_props

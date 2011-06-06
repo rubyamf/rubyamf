@@ -91,4 +91,16 @@ describe RubyAMF::Envelope do
     req = create_envelope('remotingMessage.bin')
     req.credentials.should == {"username" => nil, "password" => nil}
   end
+
+  it "should respect translate_case config for credentials" do
+    RubyAMF.configuration.translate_case = true
+    req = create_envelope('requestWithOldCredentials.bin')
+    req.credentials.should == {:username => "username", :password => "password"}
+    req = create_envelope('requestWithNewCredentials.bin')
+    req.messages[0].data.messageId.should == "CA4F7056-317E-FC0C-BEDA-DFFC8B3AA791"
+    req.credentials.should == {:username => "username", :password => "password"}
+    req = create_envelope('remotingMessage.bin')
+    req.messages[0].data.messageId.should == "FE4AF2BC-DD3C-5470-05D8-9971D51FF89D"
+    req.credentials.should == {:username => nil, :password => nil}
+  end
 end
