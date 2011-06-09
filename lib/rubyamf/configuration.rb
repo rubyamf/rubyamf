@@ -129,9 +129,9 @@ module RubyAMF
     end
   end
 
-  module LegacySandbox
-    module RubyAMF
-      module ClassMappings
+  module LegacySandbox #:nodoc:
+    module RubyAMF #:nodoc:
+      module ClassMappings #:nodoc:
         class << self
           attr_accessor :ignore_fields, :translate_case, :force_active_record_ids, :hash_key_access,
                         :assume_types, :default_mapping_scope, :use_ruby_date_time, :use_array_collection,
@@ -150,7 +150,7 @@ module RubyAMF
         end
       end
 
-      module ParameterMappings
+      module ParameterMappings #:nodoc:
         class << self
           attr_accessor :always_add_to_params, :scaffolding, :mappings
 

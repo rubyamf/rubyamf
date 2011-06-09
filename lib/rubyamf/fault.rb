@@ -1,7 +1,14 @@
 module RubyAMF
-  class Fault < ::Exception; end
+  class Fault < ::Exception #:nodoc:
+  end
 end
 
+# Convenience object carried over from rubyamf_plugin, it can be returned for
+# AMF instead of raising an exception.
+#
+# Example:
+#
+#   render :amf => FaultObject.new("No users to get")
 class FaultObject
   def self.new *args, &block
     if args.length == 2

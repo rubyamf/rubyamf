@@ -1,4 +1,10 @@
 module RubyAMF
+  # RubyAMF uses a two-stage middleware strategy. RequestParser is the first
+  # stage, and is responsible for parsing the stream and setting
+  # <tt>env ['rubyamf.request']</tt> and <tt>env ['rubyamf.response']</tt> to
+  # an instance of RubyAMF::Envelope. If the response envelope is marked as
+  # constructed, it will send back the serialized response. The second stage is
+  # RubyAMF::Rails::RequestProcessor.
   class RequestParser
     def initialize app
       @app = app

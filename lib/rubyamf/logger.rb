@@ -1,13 +1,15 @@
 require 'logger'
 
 module RubyAMF
-  class Logger
+  class Logger #:nodoc:
+    # Log exceptions in rails-style, with cleaned backtrace if available
     def log_error e
       msg = "#{e.class} (#{e.message}):\n  "
       msg += clean_backtrace(e).join("\n  ")
       logger.fatal(msg)
     end
 
+    # Send every other method call to internally wrapped logger
     def method_missing name, *args
       logger.send(name, args)
     end

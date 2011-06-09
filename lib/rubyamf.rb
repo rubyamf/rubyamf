@@ -14,10 +14,7 @@ require 'rubyamf/request_parser'
 module RubyAMF
   MIME_TYPE = "application/x-amf".freeze
 
-  # Put in module and use extend so that others can easily override
-  # methods while still being able to call down to the original
-  # through super
-  module ClassMethods
+  class << self
     def configuration
       @configuration ||= RubyAMF::Configuration.new
     end
@@ -50,7 +47,6 @@ module RubyAMF
       end
     end
   end
-  extend ClassMethods
 end
 
 # Rails specific bootstrapping
