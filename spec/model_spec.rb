@@ -60,7 +60,14 @@ describe RubyAMF::Model do
   end
 
   describe 'deserialization' do
-    it "should populate properly from deserialization" do
+    it "should populate simple object properly from deserialization" do
+      t = SimpleModelTestObject.allocate
+      t.rubyamf_init({:prop_a => "seta", :prop_b => "setb"})
+      t.prop_a.should == "seta"
+      t.prop_b.should == "setb"
+    end
+
+    it "should populate fully-conforming object properly from deserialization" do
       t = ModelTestObject.allocate
       t.rubyamf_init({"prop_a" => "seta"}, {"prop_b" => "setb"}) # classmapper would pass symbolic keys - oh well?
       t.attributes.should == {"prop_a" => "seta", "prop_b" => "setb"}
@@ -83,22 +90,19 @@ describe RubyAMF::Model do
       obj.options.should == {:only => "prop_a"}
     end
 
-    it "should convert conforming object to serializable hash" do
+    it "should convert simple object to serializable hash" do
+      t = SimpleModelTestObject.new
+      t.rubyamf_hash.should == {"prop_a" => "asdf", "prop_b" => "fdsa"}
+      t.rubyamf_hash(:only => "prop_a").should == {"prop_a" => "asdf"}
+      t.rubyamf_hash(:except => ["prop_a"]).should == {"prop_b" => "fdsa"}
+    end
+
+    it "should convert fully-conforming object to serializable hash" do
       t = ModelTestObject.new
       t.rubyamf_hash.should == t.attributes
       t.rubyamf_hash(:only => "prop_a").should == {"prop_a" => "asdf"}
       t.rubyamf_hash(:except => ["prop_a"]).should == {"prop_b" => "fdsa"}
       t.rubyamf_hash(:methods => :a_method).should == {"prop_a" => "asdf", "prop_b" => "fdsa", "a_method" => "result"}
-    end
-
-    it "should raise exception if object does not conform" do
-      class NonConformingObject
-        include RubyAMF::Model
-      end
-      a = NonConformingObject.new
-      lambda {
-        a.rubyamf_hash
-      }.should raise_error
     end
 
     it "should properly process generic includes" do
@@ -172,13 +176,6 @@ describe RubyAMF::Model do
         c.changed.should == ["name"]
       end
 
-      it "should call setters for unknown properties" do
-        c = Child.allocate
-        c.rubyamf_init({:name => "Foo Bar", :meth => "method_test"})
-        c.name.should == "Foo Bar"
-        c.meth.should == "method_test"
-      end
-
       it "should properly initialize STI objects"
     end
 
@@ -209,6 +206,15 @@ describe RubyAMF::Model do
         h["home"].should == p.home
       end
     end
+  end
+end
+
+class SimpleModelTestObject
+  include RubyAMF::Model
+  attr_accessor :prop_a, :prop_b
+  def initialize
+    @prop_a = "asdf"
+    @prop_b = "fdsa"
   end
 end
 

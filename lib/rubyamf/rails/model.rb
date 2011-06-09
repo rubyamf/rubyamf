@@ -2,7 +2,7 @@ module RubyAMF::Rails
   module Model
     include RubyAMF::Model
 
-    def self.included base
+    def self.included base #:nodoc:
       base.send :extend, ClassMethods
     end
 
@@ -63,16 +63,9 @@ module RubyAMF::Rails
       # Delete pk from attrs as they have already been set
       pk.each {|k| attrs.delete(k)}
 
-      # Call setters for non attributes
+      # Set attributtes
       # warhammerkid: Should we be setting associations some other way (not attributes)?
-      not_attributes = attrs.keys.select {|k| !base_attrs.include?(k)}
-      not_attributes.each do |k|
-        setter = "#{k}="
-        next if setter !~ /^[a-z][A-Za-z0-9_]+=/ # Make sure setter doesn't start with capital, dollar, or underscore to make this safer
-        send(setter, attrs.delete(k)) if respond_to?(setter)
-      end
-
-      # Call attributes= for remaining attributes
+      set_non_attributes attrs, base_attrs
       self.send(:attributes=, attrs)
 
       self
@@ -92,10 +85,10 @@ module RubyAMF::Rails
           self.association(reflection.name).loaded?
         elsif self.respond_to?("loaded_#{reflection.name}?")
           # Rails 2.3 and 3.0 for some types
-          send("loaded_#{reflection.name}?")
+          self.send("loaded_#{reflection.name}?")
         else
           # Rails 2.3 and 3.0 for some types
-          send(reflection.name).loaded?
+          self.send(reflection.name).loaded?
         end
         auto_include << reflection.name if is_loaded
       end

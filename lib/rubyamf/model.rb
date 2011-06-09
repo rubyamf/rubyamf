@@ -1,10 +1,13 @@
 module RubyAMF
   module Model
-    def self.included base
+    def self.included base #:nodoc:
       base.send :extend, ClassMethods
     end
 
+    # In-model mapping configuration methods
     module ClassMethods
+      # Specify the actionscript class name that this class maps to. Automatically
+      # uses the current ruby class name.
       def as_class class_name
         @as_class = class_name.to_s
         RubyAMF::ClassMapper.mappings.map :as => @as_class, :ruby => self.name
@@ -13,6 +16,15 @@ module RubyAMF
       alias :flash_class :as_class
       alias :amf_class :as_class
 
+      # Define a parameter mapping for the default scope or a given scope. Uses
+      # the predefined actionscript class name and ruby class name.
+      #
+      # Example:
+      #
+      #   as_class "com.rubyamf.Test"
+      #   map_amf :only => "prop_a"
+      #   map_amf :testing, :only => "prop_b"
+      #   map_amf :default_scope => :asdf, :only => "prop_c"
       def map_amf scope_or_options=nil, options=nil
         # Make sure they've already called as_class first
         raise "Must define as_class first" unless @as_class
@@ -29,26 +41,43 @@ module RubyAMF
       end
     end
 
+    # Populates the object after deserialization. Override if necessary to
+    # support your ORM.
     def rubyamf_init props, dynamic_props = nil
-      raise "Must implement attributes= method for default rubyamf_init to work" unless respond_to?(:attributes=)
-
       initialize # warhammerkid: Call initialize by default - good decision?
 
-      attrs = self.attributes
       props.merge!(dynamic_props) if dynamic_props
-      not_attributes = props.keys.select {|k| !attrs.include?(k)}
+      if respond_to?(:attributes=)
+        attrs = self.attributes
+        set_non_attributes props, attrs
+        self.attributes = props # Populate using attributes setter
+      else
+        set_non_attributes props, {} # Calls setters for all props it finds setters for
+      end
+    end
 
+    # Calls setters for all keys in the given hash not found in the base attributes
+    # hash and deletes those keys from the hash. Performs some simple checks on
+    # the keys to hopefully prevent more private setters from being called.
+    def set_non_attributes attrs, base_attrs
+      not_attributes = attrs.keys.select {|k| !base_attrs.include?(k)}
       not_attributes.each do |k|
         setter = "#{k}="
         next if setter !~ /^[a-z][A-Za-z0-9_]+=/ # Make sure setter doesn't start with capital, dollar, or underscore to make this safer
-        send(setter, props.delete(k)) if respond_to?(setter)
+        if respond_to?(setter)
+          send(setter, attrs.delete(k))
+        else
+          RubyAMF.logger.warn("RubyAMF: Cannot call setter for non-attribute on #{self.class.name}: #{k}")
+        end
       end
-      self.attributes = props # Populate using attributes setter
     end
 
+    # Like serializable_hash, rubyamf_hash returns a hash for serialization
+    # calculated from the given options. Supported options are <tt>:only</tt>,
+    # <tt>:except</tt>, <tt>:methods</tt>, and <tt>:include</tt>. This method
+    # is automatically called by RubyAMF::ClassMapping on serialization with
+    # the pre-configured options.
     def rubyamf_hash options=nil
-      raise "Must implement attributes method for rubyamf_hash to work" unless respond_to?(:attributes)
-
       # Process options
       options ||= {}
       only = Array.wrap(options[:only]).map(&:to_s)
@@ -59,8 +88,18 @@ module RubyAMF
       end
 
       # Get list of attributes
-      saved_attributes = attributes
-      attribute_names = saved_attributes.keys.sort
+      if respond_to?(:attributes)
+        attrs = send(:attributes)
+      else
+        attrs = {}
+        ignored_props = Object.new.public_methods
+        (self.public_methods - ignored_props).each do |method_name|
+          # Add them to the attrs hash if they take no arguments
+          method_def = self.method(method_name)
+          attrs[method_name.to_s] = send(method_name) if method_def.arity == 0
+        end
+      end
+      attribute_names = attrs.keys.sort
       if only.any?
         attribute_names &= only
       elsif except.any?
@@ -74,7 +113,7 @@ module RubyAMF
 
       # Build hash from attributes and methods
       hash = {}
-      attribute_names.each {|name| hash[name] = saved_attributes[name]}
+      attribute_names.each {|name| hash[name] = attrs[name]}
       method_names.each {|name| hash[name] = send(name)}
 
       # Add associations using ActiveRecord::Serialization style options
@@ -104,20 +143,25 @@ module RubyAMF
       hash
     end
 
+    # Override if necessary to support your ORM's system of retrieving objects
+    # in an association.
     def rubyamf_retrieve_association association
       # Naive implementation that should work for most cases without
       # need for overriding
       send(association)
     end
 
+    # Stores the given options and object in an IntermediateObject so that the
+    # default serialization mapping options can be overriden if necessary.
     def to_amf options=nil
       RubyAMF::IntermediateObject.new(self, options)
     end
   end
 end
 
-# Map array to_amf calls to each element
 class Array
+  # Returns an array of RubyAMF::IntermediateObject objects created from calling
+  # <tt>to_amf</tt> on each object in the array with the given options.
   def to_amf options=nil
     self.map {|o| o.to_amf(options)}
   end
