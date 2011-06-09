@@ -1,4 +1,35 @@
 module RubyAMF
+  # Simply include in your ruby object to enable advanced serialization features
+  # like an in-model mapping API, customizable initialization after
+  # deserialization, scoped property configuration for serialization, and several
+  # other things. See RubyAMF::Model::ClassMethods for details of in-model mapping
+  # API.
+  #
+  # Example:
+  #
+  #   class SerializableObject
+  #     include RubyAMF::Model
+  #
+  #     as_class "com.rubyamf.ASObject"
+  #     map_amf :only => "prop_a"
+  #
+  #     attr_accessor :prop_a, :prop_b
+  #   end
+  #
+  # == Integration
+  #
+  # If the object you include RubyAMF::Model into implements <tt>attributes</tt>
+  # and <tt>attributes=</tt>, those two methods will be automatically used to
+  # determine serializable properties and to set them after deserialization. If
+  # you do not implement those methods, attributes will be guessed by going through
+  # all methods that don't take arguments, and attribute setters will be used
+  # rather than <tt>attributes=</tt>.
+  #
+  # For most ORMs, the provided <tt>rubyamf_init</tt>, <tt>rubyamf_hash</tt>, and
+  # <tt>rubyamf_retrieve_association</tt> should work correctly. However, they
+  # can be overridden to provide custom behavior if the default has issues with
+  # the ORM you are using. See RubyAMF::Rails::Model for an example of ORM-specific
+  # customization.
   module Model
     def self.included base #:nodoc:
       base.send :extend, ClassMethods
@@ -6,8 +37,14 @@ module RubyAMF
 
     # In-model mapping configuration methods
     module ClassMethods
-      # Specify the actionscript class name that this class maps to. Automatically
-      # uses the current ruby class name.
+      # Specify the actionscript class name that this class maps to.
+      #
+      # Example:
+      #
+      #   class SerializableObject
+      #     include RubyAMF::Model
+      #     as_class "com.rubyamf.ASObject"
+      #   end
       def as_class class_name
         @as_class = class_name.to_s
         RubyAMF::ClassMapper.mappings.map :as => @as_class, :ruby => self.name
@@ -16,15 +53,23 @@ module RubyAMF
       alias :flash_class :as_class
       alias :amf_class :as_class
 
-      # Define a parameter mapping for the default scope or a given scope. Uses
-      # the predefined actionscript class name and ruby class name.
+      # Define a parameter mapping for the default scope or a given scope. If the
+      # first parameter is a hash, it looks for a <tt>:default_scope</tt> key to
+      # set the default scope and scope the given configuration, and parses the
+      # other keys like serializable_hash does. If the first argument is a symbol,
+      # that symbol is assumed to be the scope for the given configuration. See
+      # RubyAMF::Model#rubyamf_hash for more information about how options are
+      # parsed.
       #
       # Example:
       #
-      #   as_class "com.rubyamf.Test"
-      #   map_amf :only => "prop_a"
-      #   map_amf :testing, :only => "prop_b"
-      #   map_amf :default_scope => :asdf, :only => "prop_c"
+      #   class SerializableObject
+      #     include RubyAMF::Model
+      #     as_class "com.rubyamf.ASObject"
+      #     map_amf :only => "prop_a"
+      #     map_amf :testing, :only => "prop_b"
+      #     map_amf :default_scope => :asdf, :only => "prop_c"
+      #   end
       def map_amf scope_or_options=nil, options=nil
         # Make sure they've already called as_class first
         raise "Must define as_class first" unless @as_class
@@ -41,7 +86,9 @@ module RubyAMF
       end
     end
 
-    # Populates the object after deserialization. Override if necessary to
+    # Populates the object after deserialization. By default it calls initialize,
+    # calls setters for keys not in attributes, and calls <tt>attributes=</tt> for
+    # the remaining properties if it's implemented. Override if necessary to
     # support your ORM.
     def rubyamf_init props, dynamic_props = nil
       initialize # warhammerkid: Call initialize by default - good decision?
@@ -49,17 +96,17 @@ module RubyAMF
       props.merge!(dynamic_props) if dynamic_props
       if respond_to?(:attributes=)
         attrs = self.attributes
-        set_non_attributes props, attrs
+        rubyamf_set_non_attributes props, attrs
         self.attributes = props # Populate using attributes setter
       else
-        set_non_attributes props, {} # Calls setters for all props it finds setters for
+        rubyamf_set_non_attributes props, {} # Calls setters for all props it finds setters for
       end
     end
 
     # Calls setters for all keys in the given hash not found in the base attributes
     # hash and deletes those keys from the hash. Performs some simple checks on
     # the keys to hopefully prevent more private setters from being called.
-    def set_non_attributes attrs, base_attrs
+    def rubyamf_set_non_attributes attrs, base_attrs
       not_attributes = attrs.keys.select {|k| !base_attrs.include?(k)}
       not_attributes.each do |k|
         setter = "#{k}="
@@ -76,7 +123,7 @@ module RubyAMF
     # calculated from the given options. Supported options are <tt>:only</tt>,
     # <tt>:except</tt>, <tt>:methods</tt>, and <tt>:include</tt>. This method
     # is automatically called by RubyAMF::ClassMapping on serialization with
-    # the pre-configured options.
+    # the pre-configured options for whatever the current scope is.
     def rubyamf_hash options=nil
       # Process options
       options ||= {}

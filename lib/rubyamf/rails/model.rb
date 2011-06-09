@@ -65,7 +65,7 @@ module RubyAMF::Rails
 
       # Set attributtes
       # warhammerkid: Should we be setting associations some other way (not attributes)?
-      set_non_attributes attrs, base_attrs
+      rubyamf_set_non_attributes attrs, base_attrs
       self.send(:attributes=, attrs)
 
       self
