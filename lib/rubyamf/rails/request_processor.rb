@@ -58,7 +58,7 @@ module RubyAMF::Rails
     def get_service controller_name, method_name
       # Check controller and validate against hacking attempts
       begin
-        controller_name += "Controller" unless controller_name =~ /^[A-Za-z:]+Controller$/
+        controller_name += "Controller" unless controller_name =~ /^.+Controller$/
         controller = controller_name.constantize
         raise "not controller" unless controller.respond_to?(:controller_name) && controller.respond_to?(:action_methods)
       rescue Exception => e
