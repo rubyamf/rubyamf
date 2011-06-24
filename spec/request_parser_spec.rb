@@ -13,21 +13,26 @@ describe RubyAMF::RequestParser do
     }
   end
 
-  it "should only handle requests with proper content type" do
-    @app.should_handle?(@env).should be_true
+  it "should send HTML page if enabled for gateway requests" do
     @env['CONTENT_TYPE'] = 'text/html'
-    @app.should_handle?(@env).should be_false
+    @app.call(@env)[2].first.should =~ /html/
   end
 
-  it "should only handle requests with proper gateway path" do
-    @app.should_handle?(@env).should be_true
-    @env['PATH_INFO'] = "/invalid"
-    @app.should_handle?(@env).should be_false
+  it "should send image if HTML page enabled" do
+    @env['PATH_INFO'] = "/amf/gateway.png"
+    @app.call(@env)[1]['Content-Type'].should == 'image/png'
+  end
+
+  it "should not send HTML page if not enabled" do
+    @conf.show_html_gateway = false
+    @env['CONTENT_TYPE'] = 'text/html'
+    @mock_next.should_receive(:call).and_return("success")
+    @app.call(@env).should == "success"
   end
 
   it "should pass through requests that aren't AMF" do
+    @env['PATH_INFO'] = "/invalid"
     @mock_next.should_receive(:call).and_return("success")
-    @app.stub!(:should_handle?).and_return(false)
     @app.call(@env).should == "success"
   end
 

@@ -1,7 +1,8 @@
 module RubyAMF
   class Configuration
     # Gateway options
-    attr_accessor :gateway_path, :param_mappings, :populate_params_hash
+    attr_accessor :gateway_path, :param_mappings, :populate_params_hash,
+                  :show_html_gateway
 
     # Serialization options
     attr_accessor :translate_case, :auto_class_mapping, :use_array_collection,
@@ -12,6 +13,8 @@ module RubyAMF
       @gateway_path = "/rubyamf/gateway"
       @param_mappings = {}
       @populate_params_hash = true
+      @show_html_gateway = true
+
       @translate_case = false
       @auto_class_mapping = false
       @use_array_collection = false
