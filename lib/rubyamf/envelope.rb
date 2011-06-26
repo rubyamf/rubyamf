@@ -1,9 +1,20 @@
 require 'base64'
 
 module RubyAMF
+  # Adds several important features to RocketAMF::Envelope. None of these features
+  # are dependent on Rails, and as such can be used by any Rack compliant framework.
+  # Features are credentials support, easy parameter mapping based on configured
+  # parameter mappings, mapping scope support for serialization, and error handling
+  # for method dispatch using <tt>each_method_call</tt>.
   class Envelope < RocketAMF::Envelope
     attr_accessor :mapping_scope
 
+    # Finds and returns credentials set on the request as a hash with keys
+    # <tt>username</tt> and <tt>password</tt>, with the type dependent on the
+    # <tt>hash_key_access</tt> setting. <tt>setHeader('Credentials')</tt>
+    # credentials are used first, followed by new-style <tt>DSRemoteCredentials</tt>.
+    # If no credentials are found, a hash is returned with a username and password
+    # of <tt>nil</tt>.
     def credentials
       ds_cred_key = RubyAMF.configuration.translate_case ? "ds_remote_credentials" : "DSRemoteCredentials"
       if RubyAMF.configuration.hash_key_access == :symbol
@@ -37,6 +48,16 @@ module RubyAMF
       {username_key => nil, password_key => nil}
     end
 
+    # Given a controller, action, and the flash arguments array, returns a hash
+    # containing the arguments indexed by number as well as named key if a named
+    # mapping has been configured. Returned hash respects <tt>hash_key_access</tt>
+    # setting for named keys.
+    #
+    # Example:
+    #
+    #   RubyAMF.configuration.map_params "c", "a", ["param1", "param2"]
+    #   params = envelope.params_hash "c", "a", ["asdf", "fdsa"]
+    #   params.should == {:param1 => "asdf", :param2 => "fdsa", 0 => "asdf", 1 => "fdsa"}
     def params_hash controller, action, arguments
       conf = RubyAMF.configuration
       mapped = {}
@@ -51,6 +72,9 @@ module RubyAMF
       mapped
     end
 
+    # Extends default RocketAMF implementation to log caught exceptions and
+    # translate them into a RocketAMF::Values::ErrorMessage for return to flash
+    # after removing the backtrace (for safety).
     def dispatch_call p
       begin
         ret = p[:block].call(p[:method], p[:args])
@@ -68,7 +92,8 @@ module RubyAMF
       end
     end
 
-    def serialize class_mapper=nil
+    def serialize class_mapper=nil #:nodoc:
+      # Create a ClassMapper and set the mapping scope to pass to super implementation.
       cm = class_mapper || RubyAMF::ClassMapper.new
       cm.mapping_scope = mapping_scope if cm.respond_to?(:mapping_scope=)
       super cm
