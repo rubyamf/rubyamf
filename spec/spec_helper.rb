@@ -1,8 +1,8 @@
 require 'rubygems'
-require "bundler/setup"
+require 'bundler/setup'
 
-require 'spec'
-require 'spec/autorun'
+require 'rspec'
+require 'rspec/autorun'
 require 'rubyamf'
 
 # Active record setup

@@ -141,7 +141,7 @@ module RubyAMF
 
       # Remove ignore_fields if there is a config
       config = @mappings.serialization_config(obj.class.name, mapping_scope) || {}
-      (config[:ignore_fields] || []).each do |ignore|
+      Array.wrap(config[:ignore_fields]).each do |ignore|
         props.delete(ignore.to_s)
         props.delete(ignore.to_sym)
         if dynamic_props

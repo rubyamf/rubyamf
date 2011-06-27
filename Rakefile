@@ -1,12 +1,11 @@
 require 'bundler'
-require 'spec/rake/spectask'
+require 'rspec/core/rake_task'
 require 'rake/rdoctask'
 
 g = Bundler::GemHelper.new(File.dirname(__FILE__))
 g.install
 
-Spec::Rake::SpecTask.new do |t|
-  t.spec_opts = ['--options', 'spec/spec.opts']
+RSpec::Core::RakeTask.new do |t|
   t.rcov = true
   t.rcov_opts = ['--exclude', 'spec,gems']
 end
