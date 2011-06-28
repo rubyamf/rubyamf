@@ -1,8 +1,84 @@
 module RubyAMF
+  # RubyAMF configuration container. It can be accessed by calling
+  # <tt>RubyAMF.configuration</tt>, or modified in a block like so:
+  #
+  #   RubyAMF.configure do |config|
+  #     config.gateway_path = "/amf"
+  #   end
+  #
+  # === Gateway configuration
+  #
+  # Gateway configuration includes the gateway path and details about parameter
+  # mapping.
+  #
+  # +gateway_path+::
+  #   Default: <tt>"/rubyamf/gateway"</tt>. The URL that responds to AMF requests.
+  #   The URL should start with a "/" and not end with a "/".
+  #
+  # +populate_params_hash+::
+  #   Default: <tt>true</tt>. For Rails users, all amf parameters can be accessed
+  #   in the controller by calling <tt>rubyamf_params</tt>. If enabled, the amf
+  #   parameters are merged into the <tt>params</tt> hash as well.
+  #
+  # +show_html_gateway+::
+  #   Default: <tt>true</tt>. If enabled, non-AMF requests to the gateway url
+  #   will result in a simple HTML page being returned.
+  #
+  # +param_mappings+::
+  #    A hash that stores parameter mappings. Should only be modified through
+  #    calls to <tt>map_params</tt>
+  #
+  # === Serialization options
+  #
+  # RubyAMF provides a wide variety of customization options for serialization
+  # to simplify integration.
+  #
+  # +translate_case+::
+  #   Default: <tt>false</tt>. If enabled, properties will be converted to
+  #   underscore style on deserialization from actionscript and will be converted
+  #   to camelcase on serialization. This allows you to use language appropriate
+  #   case style and have RubyAMF automatically care of translation.
+  #
+  # +auto_class_mapping+::
+  #   Default: <tt>false</tt>. If a class mapping for a given ruby or actionscript
+  #   class has not been defined, automatically maps it during serialization or
+  #   deserialization. Nested ruby or actionscript classes will be automatically
+  #   mapped to the class name without the namespace. Example:
+  #   <tt>com.rubyamf.User => User</tt> or <tt>RubyAMF::User => User</tt>.
+  #
+  # +use_array_collection+::
+  #   Default: <tt>false</tt>. If enabled, all arrays will be serialized as
+  #   <tt>ArrayCollection</tt> objects. You can override this on a per-array
+  #   basis by setting <tt>is_array_collection</tt> on the array to <tt>true</tt>
+  #   or <tt>false</tt>. (Implementation in RocketAMF)
+  #
+  # +hash_key_access+::
+  #   Default: <tt>:symbol</tt>. If set to <tt>:string</tt>, all deserialized
+  #   hashes have the keys as strings. RocketAMF defaults to symbols, so setting
+  #   to <tt>:string</tt> will reduce performance and increase memory usage.
+  #
+  # +preload_models+::
+  #   If you are using in-model mapping and don't have <tt>auto_class_mapping</tt>
+  #   enabled, you may need to force classes to be loaded before mapping takes
+  #   effect. Simply include all necessary classes as strings to have RubyAMF
+  #   force them to be loaded on initialization.
+  #   Example: <tt>config.preload_models = ["User", "Course"]</tt>
+  #
+  # +check_for_associations+::
+  #   Default: <tt>true</tt>. If enabled, associations that have been pre-loaded,
+  #   either through :include or simply by being accessed, will be automatically
+  #   included during serialization without any additional configuration.
+  #
+  # +ignore_fields+::
+  #   Default: <tt>['created_at', 'created_on', 'updated_at', 'updated_on']</tt>.
+  #   A list of all properties that should not be serialized unless they show
+  #   up in the <tt>:only => [:prop]</tt> class mapping config for that object.
+  #   Completely separate from the <tt>:ignore_fields</tt> config for class
+  #   mapping, which affects deserialization.
   class Configuration
     # Gateway options
-    attr_accessor :gateway_path, :param_mappings, :populate_params_hash,
-                  :show_html_gateway
+    attr_accessor :gateway_path, :populate_params_hash, :show_html_gateway
+    attr_reader :param_mappings
 
     # Serialization options
     attr_accessor :translate_case, :auto_class_mapping, :use_array_collection,
@@ -24,10 +100,22 @@ module RubyAMF
       @ignore_fields = ['created_at', 'created_on', 'updated_at', 'updated_on']
     end
 
+    # Maps the given array of named parameters to the arguments for calls to the
+    # given controller and action. For Rails users, the prefered method of
+    # parameter mapping is through routing (see RubyAMF::Rails::Routing).
+    #
+    # Example:
+    #
+    #   config.map_params "UserController", "login", [:session_token, :username, :password]
+    #   # params hash => {
+    #   #   0 => "asdf", 1 => "user", 2 => "pass",
+    #   #   :session_token => "asdf", :username => "user", :password => "pass"
+    #   # }
     def map_params controller, action, params
       @param_mappings[controller.to_s+"#"+action.to_s] = params
     end
 
+    # Returns the class mapper class being used
     def class_mapper
       if @class_mapper.nil?
         @class_mapper = RubyAMF::ClassMapping
@@ -35,10 +123,21 @@ module RubyAMF
       @class_mapper
     end
 
+    # Set to the class of any conforming class mapper to use it instead of
+    # <tt>RubyAMF::ClassMapping</tt>. If you don't need any of the advanced
+    # features offered by the RubyAMF class mapper, you can gain some substantial
+    # performance improvements by settings this to
+    # <tt>RocketAMF::Ext::FastClassMapping</tt> or <tt>RocketAMF::ClassMapping</tt>
+    # for the slower pure-ruby version.
     def class_mapper= klass
       @class_mapper = klass
     end
 
+    # Loads the legacy config file at the given path or tries to locate it by
+    # looking for a <tt>rubyamf_config.rb</tt> file in several possible locations.
+    # Automatically run by RubyAMF if you are using Rails 2, it should be run
+    # before any additional configuration if you are not using Rails 2, as it
+    # overrides all previous configuration.
     def load_legacy path=nil
       # Locate legacy config
       unless path

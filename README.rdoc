@@ -3,28 +3,30 @@
 RubyAMF is a full-featured AMF gateway based off of Rack and supporting advanced
 integration with Rails and other Rack-based frameworks. It includes advanced
 class mapping functionality, like camel to underscore case translation,
-parameter mapping to convert function calls to parameter hashes, hooks for
-processing AMF authentication credentials, and many more features.
+parameter mapping to convert function calls to parameter hashes for actions,
+hooks for processing AMF authentication credentials, and many more features.
 
 == UPGRADE FROM rubyamf_plugin:
 
-1. Delete <tt>RAILS_ROOT/vendor/plugins/rubyamf</tt> or comment out every line in <tt>RAILS_ROOT/vendor/plugins/rubyamf/init.rb</tt>.
+1. Delete <tt>RAILS_ROOT/vendor/plugins/rubyamf</tt> or comment out every line
+   in <tt>RAILS_ROOT/vendor/plugins/rubyamf/init.rb</tt>.
 
 2. Add gems to application:
 
-   Bundler:
-    gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
-    gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+   <b>Bundler:</b>
+     gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
+     gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
 
-   environment.rb:
-    config.gem "RocketAMF"
-    config.gem "rubyamf"
+   <b>environment.rb:</b>
+     config.gem "RocketAMF"
+     config.gem "rubyamf"
 
-3. Configure the endpoint path by adding the following to the end of your <tt>environment.rb</tt> file:
+3. Configure the endpoint path by adding the following to the end of your
+   <tt>environment.rb</tt> file:
 
-    RubyAMF.configure do |config|
-      config.gateway_path = "/rubyamf/gateway"
-    end
+     RubyAMF.configure do |config|
+       config.gateway_path = "/rubyamf/gateway"
+     end
    
    The gateway path is no longer specified in <tt>routes.rb</tt>, so you can
    remove it and <tt>rubyamf_controller.rb</tt> if you want.
@@ -41,19 +43,20 @@ at (SOMEWHERE) or the RDoc at (SOMEWHERE).
 
 1. Add gems to application:
 
-   Bundler:
-    gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
-    gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+   <b>Bundler:</b>
+     gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
+     gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
 
-   environment.rb:
-    config.gem "RocketAMF"
-    config.gem "rubyamf"
+   <b>environment.rb:</b>
+     config.gem "RocketAMF"
+     config.gem "rubyamf"
 
-2. Configure the endpoint path by adding the following to the end of your <tt>environment.rb</tt> file:
+2. Configure the endpoint path by adding the following to the end of your
+   <tt>environment.rb</tt> file:
 
-    RubyAMF.configure do |config|
-      config.gateway_path = "/rubyamf/gateway"
-    end
+     RubyAMF.configure do |config|
+       config.gateway_path = "/rubyamf/gateway"
+     end
 
 Check out the demo app at (SOMEWHERE) or the RDoc at (SOMEWHERE) for information
 about configuration and use.
@@ -62,12 +65,12 @@ about configuration and use.
 
 1. Add the gems to your Gemfile:
 
-    gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
-    gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+     gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
+     gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
 
 2. Configure the endpoint path by adding the following to your <tt>application.rb</tt>:
 
-    config.rubyamf.gateway_path = "/amf"
+     config.rubyamf.gateway_path = "/amf"
 
 Check out the demo app at (SOMEWHERE) or the RDoc at (SOMEWHERE) for information
 about configuration and use.

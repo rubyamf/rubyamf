@@ -15,6 +15,7 @@ module RubyAMF
     end
 
     private
+    # Use rails logger if available or create standard ruby logger to STDERR
     def logger
       unless @logger
         if defined?(Rails)
@@ -26,6 +27,7 @@ module RubyAMF
       @logger
     end
 
+    # Use Rails backtrace cleaner if it exists to clean
     def clean_backtrace e
       if defined?(Rails) && ::Rails.respond_to?(:backtrace_cleaner)
         ::Rails.backtrace_cleaner.clean(e.backtrace)
