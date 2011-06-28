@@ -50,6 +50,8 @@ module RubyAMF
 end
 
 # Rails specific bootstrapping
+module RubyAMF::Rails #:nodoc:
+end
 if defined?(Rails)
   if Rails::VERSION::MAJOR == 3
     require 'rubyamf/rails/rails3_bootstrap'

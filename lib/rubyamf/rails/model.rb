@@ -1,4 +1,5 @@
 module RubyAMF::Rails
+  # Rails-specific implementation of <tt>RubyAMF::Model</tt> APIs
   module Model
     include RubyAMF::Model
 

@@ -26,7 +26,7 @@ ActionController::Renderers.add :amf do |amf, options|
   self.response_body = " "
 end
 
-class RubyAMF::Railtie < Rails::Railtie
+class RubyAMF::Railtie < Rails::Railtie #:nodoc:
   config.rubyamf = RubyAMF.configuration
 
   initializer "rubyamf.configured" do

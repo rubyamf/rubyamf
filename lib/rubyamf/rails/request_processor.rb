@@ -1,4 +1,6 @@
 module RubyAMF::Rails
+  # Rack middleware that handles dispatching AMF calls to the appropriate controller
+  # and action.
   class RequestProcessor
     def initialize app
       @app = app
@@ -18,6 +20,8 @@ module RubyAMF::Rails
       end
     end
 
+    # Actually dispatch a fake request to the appropriate controller and extract
+    # the response for serialization
     def handle_method method, args, env
       # Parse method and load service
       path = method.split('.')
@@ -55,6 +59,7 @@ module RubyAMF::Rails
       return con.send(:amf_response)
     end
 
+    # Validate the controller and method name and return the controller class
     def get_service controller_name, method_name
       # Check controller and validate against hacking attempts
       begin

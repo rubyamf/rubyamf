@@ -56,10 +56,15 @@ module RubyAMF
       # Define a parameter mapping for the default scope or a given scope. If the
       # first parameter is a hash, it looks for a <tt>:default_scope</tt> key to
       # set the default scope and scope the given configuration, and parses the
-      # other keys like serializable_hash does. If the first argument is a symbol,
-      # that symbol is assumed to be the scope for the given configuration. See
-      # RubyAMF::Model#rubyamf_hash for more information about how options are
-      # parsed.
+      # other keys like <tt>serializable_hash</tt> does. If the first argument
+      # is a symbol, that symbol is assumed to be the scope for the given
+      # configuration. Just like <tt>serializable_hash</tt>, it supports
+      # <tt>:except</tt>, <tt>:only</tt>, <tt>:methods</tt>, and <tt>:include</tt>
+      # for relations. It also has an <tt>:ignore_fields</tt> configuration for
+      # skipping certain fields during deserialization if the actionscript object
+      # contains extra fields or to protect yourself from modification of
+      # protected properties. <tt>:ignore_fields</tt> must be defined on the
+      # default scope, or it will be ignored.
       #
       # Example:
       #
@@ -68,7 +73,7 @@ module RubyAMF
       #     as_class "com.rubyamf.ASObject"
       #     map_amf :only => "prop_a"
       #     map_amf :testing, :only => "prop_b"
-      #     map_amf :default_scope => :asdf, :only => "prop_c"
+      #     map_amf :default_scope => :asdf, :only => "prop_c", :ignore_fields => ["password", "password_confirm"]
       #   end
       def map_amf scope_or_options=nil, options=nil
         # Make sure they've already called as_class first

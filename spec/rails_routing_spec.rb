@@ -33,10 +33,15 @@ describe RubyAMF::Rails::Routing do
     @controller.should == "AdminController"
   end
 
+  it "should support module-style namespace for non-rails" do
+    test_map("user#show", [], {:namespace => "NamespaceComplex::Nested"})
+    @controller.should == "NamespaceComplex::Nested::UserController"
+  end
+
   describe "Rails 2" do
     it "should recognize namespace with string style call" do
-      test_map(:controller => "user", :action => "show", :params => [], :namespace => "namespace/nested")
-      @controller.should == "Namespace::Nested::UserController"
+      test_map(:controller => "user", :action => "show", :params => [], :namespace => "namespace_complex/nested")
+      @controller.should == "NamespaceComplex::Nested::UserController"
     end
 
     it "should recognize namespace with option style call" do
