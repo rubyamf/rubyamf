@@ -33,6 +33,7 @@ module RubyAMF
         end
 
         env = ::Rack::MockRequest.env_for(RubyAMF.configuration.gateway_path, :method => "post", :input => amf_req.to_s, "CONTENT_TYPE" => RubyAMF::MIME_TYPE)
+        env["REQUEST_URI"] = env["PATH_INFO"] # Rails 2.3.X needs this
         env['rubyamf.request'] = amf_req
         env['rubyamf.response'] = RubyAMF::Envelope.new
         env
