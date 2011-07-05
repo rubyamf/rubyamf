@@ -10,6 +10,7 @@ require 'rubyamf/model'
 require 'rubyamf/configuration'
 require 'rubyamf/envelope'
 require 'rubyamf/request_parser'
+require 'rubyamf/test'
 
 module RubyAMF
   MIME_TYPE = "application/x-amf".freeze
