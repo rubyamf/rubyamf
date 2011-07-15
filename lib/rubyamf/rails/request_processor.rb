@@ -32,7 +32,13 @@ module RubyAMF::Rails
       # Setup request and controller
       new_env = env.dup
       new_env['HTTP_ACCEPT'] = RubyAMF::MIME_TYPE # Force amf response only
-      req = ActionController::Request.new(new_env)
+      if defined? ActionDispatch::Request then
+        # rails 3.1
+        req = ActionDispatch::Request.new(new_env)
+      else
+        # older rails
+        req = ActionController::Request.new(new_env)
+      end
       con = controller.new
 
       # Populate with AMF data
