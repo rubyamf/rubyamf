@@ -5,6 +5,66 @@ require "rubyamf/rails/model"
 ActiveRecord::Base.send(:include, RubyAMF::Rails::Model)
 
 describe RubyAMF::Model do
+  before :all do
+    class SimpleModelTestObject
+      include RubyAMF::Model
+      attr_accessor :prop_a, :prop_b
+      def initialize
+        @prop_a = "asdf"
+        @prop_b = "fdsa"
+      end
+    end
+
+    class ModelTestObject
+      include RubyAMF::Model
+      attr_accessor :attributes, :settable_method
+      def initialize
+        @attributes = {"prop_a" => "asdf", "prop_b" => "fdsa"}
+      end
+      def a_method
+        "result"
+      end
+    end
+
+    ActiveRecord::Schema.define do
+      create_table "parents" do |t|
+        t.string "name"
+      end
+      create_table "homes" do |t|
+        t.string "address"
+        t.integer "parent_id"
+      end
+      create_table "children" do |t|
+        t.string "name"
+        t.integer "parent_id"
+      end
+    end
+
+    class Parent < ActiveRecord::Base
+      has_many :children
+      has_one :home
+    end
+
+    class Home < ActiveRecord::Base
+      belongs_to :parent
+    end
+
+    class Child < ActiveRecord::Base
+      belongs_to :parent
+      attr_accessor :meth
+    end
+
+    class CompositeChild < ActiveRecord::Base
+      set_table_name "children"
+      set_primary_keys :id, :name
+    end
+
+    p = Parent.create :name => "parent"
+    p.children.create :name => "child 1"
+    p.children.create :name => "child 2"
+    p.home = Home.create :address => "1234 Main St."
+  end
+
   before :each do
     RubyAMF::ClassMapper.reset
     RubyAMF.configuration = RubyAMF::Configuration.new
@@ -208,61 +268,3 @@ describe RubyAMF::Model do
     end
   end
 end
-
-class SimpleModelTestObject
-  include RubyAMF::Model
-  attr_accessor :prop_a, :prop_b
-  def initialize
-    @prop_a = "asdf"
-    @prop_b = "fdsa"
-  end
-end
-
-class ModelTestObject
-  include RubyAMF::Model
-  attr_accessor :attributes, :settable_method
-  def initialize
-    @attributes = {"prop_a" => "asdf", "prop_b" => "fdsa"}
-  end
-  def a_method
-    "result"
-  end
-end
-
-ActiveRecord::Schema.define do
-  create_table "parents" do |t|
-    t.string "name"
-  end
-  create_table "homes" do |t|
-    t.string "address"
-    t.integer "parent_id"
-  end
-  create_table "children" do |t|
-    t.string "name"
-    t.integer "parent_id"
-  end
-end
-
-class Parent < ActiveRecord::Base
-  has_many :children
-  has_one :home
-end
-
-class Home < ActiveRecord::Base
-  belongs_to :parent
-end
-
-class Child < ActiveRecord::Base
-  belongs_to :parent
-  attr_accessor :meth
-end
-
-class CompositeChild < ActiveRecord::Base
-  set_table_name "children"
-  set_primary_keys :id, :name
-end
-
-p = Parent.create :name => "parent"
-p.children.create :name => "child 1"
-p.children.create :name => "child 2"
-p.home = Home.create :address => "1234 Main St."

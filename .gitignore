@@ -3,3 +3,4 @@ pkg/*
 .bundle
 coverage/
 rdoc
+Gemfile.lock

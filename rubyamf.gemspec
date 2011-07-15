@@ -11,10 +11,8 @@ Gem::Specification.new do |s|
   s.homepage    = ""
   s.summary     = %q{AMF remoting for Ruby and Rails}
   s.description = %q{RubyAMF is an open source flash remoting gateway for Ruby on Rails and other Rack-based web frameworks.}
-
   s.rubyforge_project = "rubyamf"
 
-  s.add_dependency('i18n')
   s.add_dependency('activesupport', '>= 2.3')
 
   s.files         = `git ls-files`.split("\n")

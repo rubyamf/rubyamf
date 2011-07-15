@@ -3,6 +3,17 @@ require 'bundler/setup'
 
 require 'rspec'
 require 'rspec/autorun'
+
+begin
+  # Rails 3+
+  require 'rails'
+rescue LoadError => e
+  # Rails 2.3
+  require 'initializer'
+  RAILS_ROOT = File.dirname(__FILE__)
+  Rails.configuration = Rails::Configuration.new
+end
+
 require 'rubyamf'
 
 # Active record setup

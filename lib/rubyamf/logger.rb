@@ -18,7 +18,7 @@ module RubyAMF
     # Use rails logger if available or create standard ruby logger to STDERR
     def logger
       unless @logger
-        if defined?(Rails)
+        if defined?(Rails) && ::Rails.logger
           @logger = ::Rails.logger
         else
           @logger = ::Logger.new(STDERR)
