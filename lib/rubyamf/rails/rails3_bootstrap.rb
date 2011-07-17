@@ -24,7 +24,13 @@ ActionController::Renderers.add :amf do |amf, options|
   @mapping_scope = options[:class_mapping_scope] || options[:mapping_scope] || nil
   self.content_type ||= Mime::AMF
   self.response_body = " "
-  true # Get MissingTemplate error without this with respond_with
+end
+
+# Add custom responder so respond_with works
+class ActionController::Responder
+  def to_amf
+    display resource
+  end
 end
 
 class RubyAMF::Railtie < Rails::Railtie #:nodoc:
