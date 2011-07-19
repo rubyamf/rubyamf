@@ -27,7 +27,7 @@ module RubyAMF::Rails
       path = method.split('.')
       method_name = path.pop
       controller_name = path.pop
-      controller = get_service controller_name, method_name
+      controller, method_name = get_service controller_name, method_name
 
       # Setup request and controller
       new_env = env.dup
@@ -76,12 +76,15 @@ module RubyAMF::Rails
         raise "Service #{controller_name} does not exist"
       end
 
-      # Check action
-      unless controller.action_methods.include?(method_name)
+      # Check action both plain and underscored
+      actions = controller.action_methods
+      if actions.include?(method_name)
+        return [controller, method_name]
+      elsif actions.include?(method_name.underscore)
+        return [controller, method_name.underscore]
+      else
         raise "Service #{controller_name} does not respond to #{method_name}"
       end
-
-      return controller
     end
   end
 end

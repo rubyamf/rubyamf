@@ -41,6 +41,12 @@ describe RubyAMF::Rails::RequestProcessor do
     env['rubyamf.response'].result.should == "success"
   end
 
+  it "should underscore the method name if it can't find it normally" do
+    env = RubyAMF::Test.create_call 3, "AmfTestController.simpleTest"
+    @app.call(env)
+    env['rubyamf.response'].result.should == "success"
+  end
+
   it "should should support is_amf? in controller" do
     env = RubyAMF::Test.create_call 3, "AmfTestController.is_amf_test"
     @app.call(env)
