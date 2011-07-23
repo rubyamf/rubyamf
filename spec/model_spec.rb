@@ -203,6 +203,20 @@ describe RubyAMF::Model do
         c.changed.should == ["name"]
       end
 
+      it "should create new records if id is 'empty'" do
+        c = Child.allocate
+        c.rubyamf_init({:id => 0, :name => "Foo Bar"})
+        c.name.should == "Foo Bar"
+        c.new_record?.should == true
+        c.changed.should == ["name"]
+
+        c = Child.allocate
+        c.rubyamf_init({:id => nil, :name => "Foo Bar"})
+        c.name.should == "Foo Bar"
+        c.new_record?.should == true
+        c.changed.should == ["name"]
+      end
+
       it "should determine whether a record is new if composite PK" do
         # Create composite child in DB
         c = CompositeChild.new

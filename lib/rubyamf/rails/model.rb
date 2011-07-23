@@ -17,13 +17,13 @@ module RubyAMF::Rails
       is_new = true
       pk = Array.wrap(self.class.primary_key).map &:to_s
       if pk.length > 1 || pk[0] != 'id'
-        unless pk.any? {|k| attrs[k].nil?}
+        unless pk.any? {|k| empty_key?(attrs, k)}
           search = pk.map {|k| attrs[k]}
           search = search.first if search.length == 1
           is_new = !self.class.exists?(search) # Look it up in the database to make sure because it may be a string PK (or composite PK)
         end
       else
-        is_new = false unless attrs['id'] == 0 || attrs['id'] == nil
+        is_new = false unless empty_key?(attrs, 'id')
       end
 
       # Get base attributes hash for later use
@@ -35,7 +35,7 @@ module RubyAMF::Rails
 
         # Populate part of given primary key
         pk.each do |k|
-          self.send("#{k}=", attrs[k]) unless attrs[k].nil?
+          self.send("#{k}=", attrs[k]) unless empty_key?(attrs, k)
         end
       else
         # Initialize with defaults so that changed properties will be marked dirty
@@ -116,6 +116,11 @@ module RubyAMF::Rails
       when :has_one, :belongs_to
         send(association)
       end
+    end
+
+    def empty_key? attrs, key
+      return true unless attrs.key?(key)
+      attrs[key] == 0 || attrs[key].nil?
     end
   end
 end
