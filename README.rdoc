@@ -15,7 +15,7 @@ hooks for processing AMF authentication credentials, and many more features.
 
    <b>Bundler:</b>
      gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
-     gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+     gem 'rubyamf', :git => 'git://github.com/rubyamf/rubyamf.git'
 
    <b>environment.rb:</b>
      config.gem "RocketAMF"
@@ -45,7 +45,7 @@ at (SOMEWHERE) or the RDoc at (SOMEWHERE).
 
    <b>Bundler:</b>
      gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
-     gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+     gem 'rubyamf', :git => 'git://github.com/rubyamf/rubyamf.git'
 
    <b>environment.rb:</b>
      config.gem "RocketAMF"
@@ -66,7 +66,7 @@ about configuration and use.
 1. Add the gems to your Gemfile:
 
      gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
-     gem 'rubyamf', :git => 'git://github.com/warhammerkid/rubyamf-experiment.git'
+     gem 'rubyamf', :git => 'git://github.com/rubyamf/rubyamf.git'
 
 2. Configure the endpoint path by adding the following to your <tt>application.rb</tt>:
 
