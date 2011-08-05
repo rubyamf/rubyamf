@@ -4,6 +4,8 @@ module RubyAMF::Rails
   # syntax styles for better integration into Rails 2 or Rails 3. This module
   # can also be used outside of Rails by including it wherever you want.
   module Routing
+    RAILS2_NAMESPACE_OPTIONS = [:path_prefix, :name_prefix, :namespace]
+
     # Define a parameter mapping
     #
     # ===Rails 2
@@ -13,6 +15,9 @@ module RubyAMF::Rails
     #     map.namespace :admin do |admin|
     #       admin.amf "controller#action", [:param1, :param2]
     #     end
+    #     map.amf "controller", "action1" => [:param1, :param2],
+    #                           "action2" => [:param1, :param2],
+    #                           "action3" => [:param1]
     #   end
     #
     # ===Rails 3
@@ -22,6 +27,9 @@ module RubyAMF::Rails
     #     namespace :admin do
     #       map_amf "controller#action", [:param1, :param2]
     #     end
+    #     map_amf "controller", "action1" => [:param1, :param2],
+    #                           "action2" => [:param1, :param2],
+    #                           "action3" => [:param1]
     #   end
     #
     # ===Generic Framework
@@ -37,11 +45,28 @@ module RubyAMF::Rails
       # Rails 3 stores current namespace info in @scope variable
 
       # Process args
-      if args[0].is_a?(String)
+      if args.length == 2 && args[1].is_a?(Hash) # "controller", "action" => [], "action" => []
+        # Extract the rails2_with_options hash and separate it from the actions
+        rails2_with_options = {}
+        actions = {}
+        args[1].each do |k,v|
+          if RAILS2_NAMESPACE_OPTIONS.include?(k)
+            rails2_with_options[k] = v
+          else
+            actions[k] = v
+          end
+        end
+
+        # Call map_amf for all actions
+        actions.each do |k, v|
+          map_amf({:controller => args[0].to_s, :action => k.to_s, :params => v}.merge(rails2_with_options))
+        end
+        return nil
+      elsif args[0].is_a?(String) # "controller#action", []
         (controller, action) = args[0].split("#")
         params = args[1]
         rails2_with_options = args[2] || {}
-      else
+      else # :controller => "con", :action => "act", :params => []
         controller = args[0].delete(:controller)
         action = args[0].delete(:action)
         params = args[0].delete(:params)
