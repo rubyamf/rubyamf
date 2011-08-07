@@ -38,7 +38,13 @@ module RubyAMF
     def handle_amf env
       # Wrap request and response
       env['rack.input'].rewind
-      env['rubyamf.request'] = RubyAMF::Envelope.new.populate_from_stream(env['rack.input'].read)
+      begin
+        env['rubyamf.request'] = RubyAMF::Envelope.new.populate_from_stream(env['rack.input'].read)
+      rescue Exception => e
+        RubyAMF.logger.log_error(e)
+        msg = "Invalid AMF request"
+        return [400, {"Content-Type" => "text/plain", 'Content-Length' => msg.length}, [msg]]
+      end
       env['rubyamf.response'] = RubyAMF::Envelope.new
 
       # Pass up the chain to the request processor, or whatever is layered in between

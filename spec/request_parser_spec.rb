@@ -42,4 +42,11 @@ describe RubyAMF::RequestParser do
     response = @app.call(@env)
     response[1]["Content-Type"].should == RubyAMF::MIME_TYPE
   end
+
+  it "should send a 400 if there's a deserialize error" do
+    @env['rack.input'] = StringIO.new(0xFF.chr) # Invalid AMF stream
+    response = @app.call(@env)
+    response[0].should == 400
+    response[1]["Content-Type"].should == 'text/plain'
+  end
 end
