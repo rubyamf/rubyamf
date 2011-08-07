@@ -2,6 +2,7 @@ require 'rubyamf/rails/controller'
 require 'rubyamf/rails/model'
 require 'rubyamf/rails/request_processor'
 require 'rubyamf/rails/routing'
+require 'rubyamf/rails/time'
 require 'action_controller'
 
 # Hook up MIME type
