@@ -158,11 +158,6 @@ module RubyAMF
         attribute_names -= except
       end
 
-      # Remove ignore_fields unless in only
-      RubyAMF.configuration.ignore_fields.each do |field|
-        attribute_names.delete(field) unless only.include?(field)
-      end
-
       # Build hash from attributes and methods
       hash = {}
       attribute_names.each {|name| hash[name] = attrs[name]}

@@ -184,12 +184,6 @@ describe RubyAMF::Model do
       h["courses"].length.should == 1
       h["courses"][0].options.should == {:except => "prop_b"}
     end
-
-    it "should ignore configured fields unless specifically included" do
-      RubyAMF.configuration.ignore_fields << "prop_a"
-      ModelTestObject.new.rubyamf_hash.should == {"prop_b" => "fdsa"}
-      ModelTestObject.new.rubyamf_hash(:only => ["prop_a", "prop_b"]).should == {"prop_a" => "asdf", "prop_b" => "fdsa"}
-    end
   end
 
   # Need to run these tests against rails 2.3, 3.0, and 3.1

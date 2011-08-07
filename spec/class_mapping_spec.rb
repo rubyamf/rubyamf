@@ -127,8 +127,18 @@ describe RubyAMF::ClassMapping do
     obj.initialized?.should_not == true
   end
 
+  it "should skip properties on deserialize that are globally ignored" do
+    obj = MappingModelTestClass.new
+    @conf.ignore_fields = ["asdf"]
+    @set.map :as => "MappingModelTestClass", :ruby => "MappingModelTestClass"
+
+    obj.should_receive(:rubyamf_init).with({:fdsa => "fdsa"}, nil)
+    @mapper.populate_ruby_obj(obj, {:asdf => "asdf", :fdsa => "fdsa"})
+  end
+
   it "should skip properties on deserialize that are configured to be ignored" do
     obj = MappingModelTestClass.new
+    @conf.ignore_fields = ["fdsa"]
     @set.map :as => "MappingModelTestClass", :ruby => "MappingModelTestClass", :ignore_fields => "asdf"
 
     obj.should_receive(:rubyamf_init).with({:fdsa => "fdsa"}, nil)

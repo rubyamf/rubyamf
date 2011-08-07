@@ -71,10 +71,8 @@ module RubyAMF
   #
   # +ignore_fields+::
   #   Default: <tt>['created_at', 'created_on', 'updated_at', 'updated_on']</tt>.
-  #   A list of all properties that should not be serialized unless they show
-  #   up in the <tt>:only => [:prop]</tt> class mapping config for that object.
-  #   Completely separate from the <tt>:ignore_fields</tt> config for class
-  #   mapping, which affects deserialization.
+  #   A list of all properties that should not be deserialized by default. The
+  #   class-level <tt>:ignore_fields</tt> config overrides this.
   class Configuration
     # Gateway options
     attr_accessor :gateway_path, :populate_params_hash, :show_html_gateway
@@ -158,7 +156,7 @@ module RubyAMF
       pm = LegacySandbox::RubyAMF::ParameterMappings
 
       # Raise exceptions for disabled settings
-      if cm.force_active_record_ids != nil; raise "CONFIG PARSE ERROR: force_active_record_ids is no longer supported. Use ignore_fields if you want to prevent the id from being serialized."; end
+      if cm.force_active_record_ids != nil; raise "CONFIG PARSE ERROR: force_active_record_ids is no longer supported. Use <tt>:except</tt> if you want to prevent the id from being serialized."; end
       if cm.hash_key_access == :indifferent; raise "CONFIG PARSE ERROR: indifferent hash_key_access is not supported for performance reasons. Use either :string or :symbol, the default."; end
       if cm.default_mapping_scope != nil; raise "CONFIG PARSE ERROR: default_mapping_scope is not supported globally. Please log a feature request if you need it, or use switch to the new config syntax which supports per-model defaults."; end
       if cm.use_ruby_date_time == true; raise "CONFIG PARSE ERROR: use_ruby_date_time is not supported by RocketAMF. Please log a feature request if you need it."; end
