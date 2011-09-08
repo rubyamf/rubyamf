@@ -21,6 +21,11 @@ end
 
 # Hook up rendering
 ActionController::Renderers.add :amf do |amf, options|
+  # Make sure Relation objects get converted to arrays so they serialize correctly
+  if defined?(ActiveRecord) && amf.is_a?(ActiveRecord::Relation)
+    amf = amf.to_a
+  end
+
   @amf_response = amf
   @mapping_scope = options[:class_mapping_scope] || options[:mapping_scope] || nil
   self.content_type ||= Mime::AMF
