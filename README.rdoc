@@ -72,7 +72,7 @@ about configuration and use.
 
      config.rubyamf.gateway_path = "/amf"
 
-Check out the demo app at (SOMEWHERE) or the RDoc at (SOMEWHERE) for information
+Check out the demo app at https://github.com/rubyamf/rubyamf-demo or the RDoc at (SOMEWHERE) for information
 about configuration and use.
 
 == OTHER RACK FRAMEWORK INSTALL:
