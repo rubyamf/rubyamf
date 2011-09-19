@@ -37,7 +37,7 @@ hooks for processing AMF authentication credentials, and many more features.
    be on your way.
 
 If you want to learn more about the new features, please check out the demo app
-at (SOMEWHERE) or the RDoc at (SOMEWHERE).
+at https://github.com/rubyamf/rubyamf-demo or the RDoc at (SOMEWHERE).
 
 == RAILS 2 INSTALL:
 
