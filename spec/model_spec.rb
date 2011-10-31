@@ -189,6 +189,7 @@ describe RubyAMF::Model do
   # Need to run these tests against rails 2.3, 3.0, and 3.1
   describe 'ActiveRecord' do
     describe 'deserialization' do
+
       it "should create new records if no id given" do
         c = Child.allocate
         c.rubyamf_init({:name => "Foo Bar"})
@@ -224,16 +225,34 @@ describe RubyAMF::Model do
         c.new_record?.should == false
         c.changed.should == []
       end
+  
+      context "associations" do
+        let(:p) { Parent.allocate }
+        let(:c) { Child.allocate }
+          
+        before :each do
+          c.rubyamf_init({:name => "Foo Bar"})
+          p.rubyamf_init({:name => "parent", :children => [c]})
+          p.children.length.should == 1
+          p.save
+        end
 
-      it "should deserialize associations" do
-        p = Parent.allocate
-        c = Child.allocate
-        c.rubyamf_init({:name => "Foo Bar"})
-        p.rubyamf_init({:name => "parent", :children => [c]})
-        p.children.length.should == 1
-        p.save
-        p.children[0].parent_id.should == p.id
-      end
+        it "should deserialize associations" do
+          p.children[0].parent_id.should == p.id
+        end
+
+        it "should deserialize and clear empty associations" do
+          p.rubyamf_init({:name => "parent", :children => []})
+          p.save
+          p.children.length.should == 0
+        end
+
+        it "should ignore nil associations" do
+          p.rubyamf_init({:name => "parent", :children => nil})
+          p.save
+          p.children(true).length.should == 1
+        end
+      end 
 
       it "should properly initialize 'existing' objects" do
         c = Child.allocate
@@ -247,7 +266,7 @@ describe RubyAMF::Model do
       it "should properly initialize STI objects"
     end
 
-    describe 'serialiazation' do
+    describe 'serialization' do
       it "should support serializing associations" do
         h = Parent.first.rubyamf_hash(:include => [:children])
         h["children"].length.should == 2
