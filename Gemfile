@@ -19,8 +19,6 @@ if false # Rails 3.0
 end
 
 if false # Rails 3.1
-  # composite_primary_keys currently erroneously requires pg, but I'm commenting out the lines locally
-  # see: https://github.com/drnic/composite_primary_keys/issues/44
-  gem 'rails', '3.1.0.rc4'
+  gem 'rails', '~>3.1'
   gem 'composite_primary_keys', :git => 'git://github.com/drnic/composite_primary_keys.git'
 end
