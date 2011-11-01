@@ -62,10 +62,13 @@ module RubyAMF::Rails
       end
 
       # Delete pk from attrs as they have already been set
-      pk.each {|k| attrs.delete(k)}
+      pk.each {|k| attrs.delete(k)}    
 
       # Set attributtes
       # warhammerkid: Should we be setting associations some other way (not attributes)?
+      if self.class.respond_to?(:reflections) && reflection_keys = self.class.reflections.keys # Ignore nil associations for ActiveRecords
+        reflection_keys.each {|k| attrs.delete(k.to_s) if attrs[k.to_s].nil?}
+      end
       rubyamf_set_non_attributes attrs, base_attrs
       self.send(:attributes=, attrs)
 
