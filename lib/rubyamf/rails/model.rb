@@ -66,6 +66,7 @@ module RubyAMF::Rails
 
       # Set attributtes
       # warhammerkid: Should we be setting associations some other way (not attributes)?
+      self.class.reflections.keys.each {|k| attrs.delete(k.to_s) if attrs[k.to_s].nil?}  # Ignore nil associations
       rubyamf_set_non_attributes attrs, base_attrs
       self.send(:attributes=, attrs)
 
