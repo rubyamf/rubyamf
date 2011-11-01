@@ -156,6 +156,7 @@ describe RubyAMF::Model do
   # Need to run these tests against rails 2.3, 3.0, and 3.1
   describe 'ActiveRecord' do
     describe 'deserialization' do
+
       it "should create new records if no id given" do
         c = Child.allocate
         c.rubyamf_init({:name => "Foo Bar"})
@@ -192,41 +193,6 @@ describe RubyAMF::Model do
         c.changed.should == []
       end
 
-      it "should deserialize associations" do
-        # Force Parent with id of 2 to be created
-        temp = Parent.new
-        temp.id = 2
-        temp.save
-
-        # Run rubyamf_init
-        p = Parent.allocate
-        c = Child.allocate
-        c.rubyamf_init({:name => "Foo Bar"})
-        p.rubyamf_init({:id => 2, :name => "parent", :children => [c]})
-        p.children.length.should == 1
-        p.save
-
-        # Did it save properly?
-        p = Parent.find(2)
-        p.name.should == "parent"
-        p.children.length.should == 1
-        p.children[0].parent_id.should == p.id
-        p.children[0].name.should == "Foo Bar"
-      end
-
-      it "should deserialize associations through amf" do
-        RubyAMF::ClassMapper.mappings.map :as => 'Parent', :ruby => 'Parent'
-        RubyAMF::ClassMapper.mappings.map :as => 'Child', :ruby => 'Child'
-        p = Parent.new :name => "stringent parent"
-        p.children << Child.new(:name => "child new")
-        p.children << Child.new(:name => "child new2")
-        input = RocketAMF::Serializer.new(RubyAMF::ClassMapper.new).serialize(3, p)
-        out = RocketAMF::Deserializer.new(RubyAMF::ClassMapper.new).deserialize(3, input)
-        out.save
-        out.children.length.should == 2
-        out.children[0].parent_id.should == out.id
-      end
-
       it "should properly initialize 'existing' objects" do
         c = Child.allocate
         c.rubyamf_init({:id => 5, :name => "Bar Foo"})
@@ -237,9 +203,42 @@ describe RubyAMF::Model do
       end
 
       it "should properly initialize STI objects"
+
+      context "associations" do
+        let(:p) { Parent.allocate }
+        let(:c) { Child.allocate }
+
+        def create_deserialized_parent_with_children children
+          id = p.id
+          p = Parent.allocate
+          p.rubyamf_init({:id => id, :name => "parent", :children => children})
+          p.save
+        end
+
+        before :each do
+          c.rubyamf_init({:name => "Foo Bar"})
+          p.rubyamf_init({:name => "parent", :children => [c]})
+          p.children.length.should == 1
+          p.save
+        end
+
+        it "should deserialize associations" do
+          p.children[0].parent_id.should == p.id
+        end
+
+        it "should deserialize and clear empty associations" do
+          create_deserialized_parent_with_children []
+          p.children(true).length.should == 0
+        end
+
+        it "should ignore nil associations" do
+          create_deserialized_parent_with_children nil
+          p.children(true).length.should == 1
+        end
+      end
     end
 
-    describe 'serialiazation' do
+    describe 'serialization' do
       it "should support serializing associations" do
         h = Parent.first.rubyamf_hash(:include => [:children])
         h["children"].length.should == 2
