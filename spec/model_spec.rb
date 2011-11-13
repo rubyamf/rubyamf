@@ -240,12 +240,11 @@ describe RubyAMF::Model do
       context "associations" do
         let(:p) { Parent.allocate }
         let(:c) { Child.allocate }
+        let(:p_with_associations) { Parent.allocate }
 
-        def create_deserialized_parent_with_children children
-          id = p.id
-          p = Parent.allocate
-          p.rubyamf_init({:id => id, :name => "parent", :children => children})
-          p.save
+        def create_deserialized_parent_with_associations children=nil, home=nil, save_parent=true
+          p_with_associations.rubyamf_init({:id => p.id, :name => "parent", :children => children, :home => home})
+          p_with_associations.save if save_parent
         end
 
         before :each do
@@ -259,14 +258,27 @@ describe RubyAMF::Model do
           p.children[0].parent_id.should == p.id
         end
 
-        it "should deserialize and clear empty associations" do
-          create_deserialized_parent_with_children []
-          p.children(true).length.should == 0
+        it "should deserialize and not clear empty associations" do
+          create_deserialized_parent_with_associations []
+          p_with_associations.children(true).length.should == 1
         end
 
         it "should ignore nil associations" do
-          create_deserialized_parent_with_children nil
-          p.children(true).length.should == 1
+          create_deserialized_parent_with_associations nil
+          p_with_associations.children(true).length.should == 1
+        end
+
+        it "should deserialize and not automatically save associations" do
+          c2 = Child.allocate
+          c2.rubyamf_init({:name => "Foo Bars"})
+          h = Home.allocate
+          h.rubyamf_init(:address => "1234 Here")
+          create_deserialized_parent_with_associations [c2], h, false
+          c2.should be_new_record
+          h.should be_new_record
+          p_with_associations.save
+          c2.should_not be_new_record
+          h.should_not be_new_record
         end
       end
     end

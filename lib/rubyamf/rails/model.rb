@@ -64,12 +64,33 @@ module RubyAMF::Rails
       # Delete pk from attrs as they have already been set
       pk.each {|k| attrs.delete(k)}
 
-      # Set attributtes
-      # warhammerkid: Should we be setting associations some other way (not attributes)?
-      self.class.reflections.keys.each do |k|
-        value = attrs.delete(k.to_s)
-        send("#{k}=", value) if value # Ignore nil associations
+      # Set associations
+      (reflections = self.class.reflections).keys.each do |k|
+        if value = attrs.delete(k.to_s)
+          reflection_macro = reflections[k].macro
+          if ::ActiveRecord::VERSION::STRING < "3.1"
+            case reflection_macro
+              when :has_one
+                self.send("set_#{k}_target", value)
+              when :belongs_to
+                self.send("#{k}=", value)
+              when :has_many, :has_and_belongs_to_many
+                self.send("#{k}").target = value
+              when :composed_of
+                self.send("#{k}=", value) # this sets the attributes to the corresponding values
+            end
+          else
+            case reflection_macro
+              when :has_many, :has_and_belongs_to_many, :has_one
+                self.association(k).target = value
+              when :belongs_to, :composed_of
+                self.send("#{k}=", value) # this sets the attributes to the corresponding values
+            end
+          end
+        end
       end
+
+      # Set attributes
       rubyamf_set_non_attributes attrs, base_attrs
       self.send(:attributes=, attrs)
 
