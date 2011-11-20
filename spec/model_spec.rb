@@ -26,39 +26,6 @@ describe RubyAMF::Model do
       end
     end
 
-    ActiveRecord::Schema.define do
-      create_table "parents" do |t|
-        t.string "name"
-      end
-      create_table "homes" do |t|
-        t.string "address"
-        t.integer "parent_id"
-      end
-      create_table "children" do |t|
-        t.string "name"
-        t.integer "parent_id"
-      end
-    end
-
-    class Parent < ActiveRecord::Base
-      has_many :children
-      has_one :home
-    end
-
-    class Home < ActiveRecord::Base
-      belongs_to :parent
-    end
-
-    class Child < ActiveRecord::Base
-      belongs_to :parent
-      attr_accessor :meth
-    end
-
-    class CompositeChild < ActiveRecord::Base
-      set_table_name "children"
-      set_primary_keys :id, :name
-    end
-
     p = Parent.create :name => "parent"
     p.children.create :name => "child 1"
     p.children.create :name => "child 2"
@@ -226,13 +193,38 @@ describe RubyAMF::Model do
       end
 
       it "should deserialize associations" do
+        # Force Parent with id of 2 to be created
+        temp = Parent.new
+        temp.id = 2
+        temp.save
+
+        # Run rubyamf_init
         p = Parent.allocate
         c = Child.allocate
         c.rubyamf_init({:name => "Foo Bar"})
-        p.rubyamf_init({:name => "parent", :children => [c]})
+        p.rubyamf_init({:id => 2, :name => "parent", :children => [c]})
         p.children.length.should == 1
         p.save
+
+        # Did it save properly?
+        p = Parent.find(2)
+        p.name.should == "parent"
+        p.children.length.should == 1
         p.children[0].parent_id.should == p.id
+        p.children[0].name.should == "Foo Bar"
+      end
+
+      it "should deserialize associations through amf" do
+        RubyAMF::ClassMapper.mappings.map :as => 'Parent', :ruby => 'Parent'
+        RubyAMF::ClassMapper.mappings.map :as => 'Child', :ruby => 'Child'
+        p = Parent.new :name => "stringent parent"
+        p.children << Child.new(:name => "child new")
+        p.children << Child.new(:name => "child new2")
+        input = RocketAMF::Serializer.new(RubyAMF::ClassMapper.new).serialize(3, p)
+        out = RocketAMF::Deserializer.new(RubyAMF::ClassMapper.new).deserialize(3, input)
+        out.save
+        out.children.length.should == 2
+        out.children[0].parent_id.should == out.id
       end
 
       it "should properly initialize 'existing' objects" do
