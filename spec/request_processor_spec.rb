@@ -20,6 +20,14 @@ describe RubyAMF::Rails::RequestProcessor do
       def scope_test
         render :amf => {:prop_a => "asdf"}, :mapping_scope => :test_scope
       end
+
+      def raise_test
+        raise "exception raised"
+      end
+
+      def fault_test
+        render :amf => FaultObject.new("exception raised")
+      end
     end
   end
 
@@ -56,15 +64,17 @@ describe RubyAMF::Rails::RequestProcessor do
   it "should return an exception if the controller doesn't exist" do
     env = RubyAMF::Test.create_call 3, "Kernel.exec", "puts 'Muhahaha!'"
     @app.call(env)
-    env['rubyamf.response'].messages[0].data.should be_a(RocketAMF::Values::ErrorMessage)
-    env['rubyamf.response'].messages[0].data.faultString.should == "Service KernelController does not exist"
+    err = env['rubyamf.response'].messages[0].data
+    err.should be_a(RocketAMF::Values::ErrorMessage)
+    err.faultString.should == "Service KernelController does not exist"
   end
 
   it "should return an exception if the controller doesn't respond to the action" do
     env = RubyAMF::Test.create_call 3, "AmfTestController.non_existant"
     @app.call(env)
-    env['rubyamf.response'].messages[0].data.should be_a(RocketAMF::Values::ErrorMessage)
-    env['rubyamf.response'].messages[0].data.faultString.should == "Service AmfTestController does not respond to non_existant"
+    err = env['rubyamf.response'].messages[0].data
+    err.should be_a(RocketAMF::Values::ErrorMessage)
+    err.faultString.should == "Service AmfTestController does not respond to non_existant"
   end
 
   it "shouldn't populate params hash if disabled" do
@@ -89,5 +99,21 @@ describe RubyAMF::Rails::RequestProcessor do
     env = RubyAMF::Test.create_call 3, "AmfTestController.scope_test"
     @app.call(env)
     env['rubyamf.response'].mapping_scope.should == :test_scope
+  end
+
+  it "should catch and handle raised exceptions" do
+    env = RubyAMF::Test.create_call 3, "AmfTestController.raise_test"
+    @app.call(env)
+    err = env['rubyamf.response'].messages[0].data
+    err.should be_a(RocketAMF::Values::ErrorMessage)
+    err.faultString.should == "exception raised"
+  end
+
+  it "should catch and handle returned FaultObjects" do
+    env = RubyAMF::Test.create_call 3, "AmfTestController.fault_test"
+    @app.call(env)
+    err = env['rubyamf.response'].messages[0].data
+    err.should be_a(RocketAMF::Values::ErrorMessage)
+    err.faultString.should == "exception raised"
   end
 end
