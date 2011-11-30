@@ -19,7 +19,7 @@ if defined?(ActiveRecord)
   ActiveRecord::Base.send(:include, RubyAMF::Rails::Model)
 end
 
-# Hook up rendering
+# Hook up rendering and hack in our custom error handling
 module ActionController #:nodoc:
   class Base #:nodoc:
     def render_with_amf(options = nil, extra_options ={}, &block)
@@ -32,6 +32,17 @@ module ActionController #:nodoc:
       end
     end
     alias_method_chain :render, :amf
+  end
+
+  module Rescue #:nodoc:
+    protected
+    # Re-raise the exception so that RubyAMF gets it if it's an AMF call. Otherwise
+    # RubyAMF doesn't know that the call failed and a "success" response is sent.
+    def rescue_action_with_amf(exception)
+      raise exception if respond_to?(:is_amf?) && is_amf?
+      rescue_action_without_amf exception
+    end
+    alias_method_chain :rescue_action, :amf
   end
 end
 
