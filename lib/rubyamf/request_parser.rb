@@ -43,7 +43,7 @@ module RubyAMF
       rescue Exception => e
         RubyAMF.logger.log_error(e)
         msg = "Invalid AMF request"
-        return [400, {"Content-Type" => "text/plain", 'Content-Length' => msg.length}, [msg]]
+        return [400, {"Content-Type" => "text/plain", 'Content-Length' => msg.length.to_s}, [msg]]
       end
       env['rubyamf.response'] = RubyAMF::Envelope.new
 
