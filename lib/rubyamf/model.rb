@@ -115,7 +115,7 @@ module RubyAMF
       not_attributes = attrs.keys.select {|k| !base_attrs.include?(k)}
       not_attributes.each do |k|
         setter = "#{k}="
-        next if setter !~ /^[a-z][A-Za-z0-9_]+=/ # Make sure setter doesn't start with capital, dollar, or underscore to make this safer
+        next if setter !~ /^[a-z][A-Za-z0-9_]*=/ # Make sure setter doesn't start with capital, dollar, or underscore to make this safer
         if respond_to?(setter)
           send(setter, attrs.delete(k))
         else
