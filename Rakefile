@@ -1,13 +1,14 @@
+require 'rubygems'
 require 'bundler'
 require 'rspec/core/rake_task'
-require 'rake/rdoctask'
+require 'rdoc/task'
 
 g = Bundler::GemHelper.new(File.dirname(__FILE__))
 g.install
 
 RSpec::Core::RakeTask.new do |t|
   t.rcov = true
-  t.rcov_opts = ['--exclude', 'spec,gems']
+  t.rcov_opts = ['--exclude', 'spec,gems,.bundler']
 end
 
 desc 'Generate documentation for RubyAMF'

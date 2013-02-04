@@ -53,9 +53,10 @@ module RubyAMF
   #   or <tt>false</tt>. (Implementation in RocketAMF)
   #
   # +hash_key_access+::
-  #   Default: <tt>:symbol</tt>. If set to <tt>:string</tt>, all deserialized
-  #   hashes have the keys as strings. RocketAMF defaults to symbols, so setting
-  #   to <tt>:string</tt> will reduce performance and increase memory usage.
+  #   Default: <tt>:string</tt>. If set to <tt>:symbol</tt>, all deserialized
+  #   hashes have the keys as symbols. RocketAMF defaults to strings, so setting
+  #   to <tt>:symbol</tt> will reduce performance and possibly open you up to
+  #   memory usage attacks.
   #
   # +preload_models+::
   #   If you are using in-model mapping and don't have <tt>auto_class_mapping</tt>
@@ -92,7 +93,7 @@ module RubyAMF
       @translate_case = false
       @auto_class_mapping = false
       @use_array_collection = false
-      @hash_key_access = :symbol
+      @hash_key_access = :string
       @preload_models = []
       @check_for_associations = true
       @ignore_fields = ['created_at', 'created_on', 'updated_at', 'updated_on']

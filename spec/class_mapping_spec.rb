@@ -73,11 +73,11 @@ describe RubyAMF::ClassMapping do
 
   it "should translate property case on deserialization correctly" do
     @conf.translate_case = true
-    props = {:aProperty => "asdf", :aMoreComplexProperty => "asdf"}
-    dynamic_props = {:aDynamicProperty => "fdsa"}
+    props = {'aProperty' => "asdf", 'aMoreComplexProperty' => "asdf"}
+    dynamic_props = {'aDynamicProperty' => "fdsa"}
     obj = RocketAMF::Values::TypedHash.new("")
     @mapper.populate_ruby_obj obj, props, dynamic_props
-    obj.should == {:a_property => "asdf", :a_more_complex_property => "asdf", :a_dynamic_property => "fdsa"}
+    obj.should == {'a_property' => "asdf", 'a_more_complex_property' => "asdf", 'a_dynamic_property' => "fdsa"}
   end
 
   it "should translate property case on serialization correctly" do
@@ -87,12 +87,12 @@ describe RubyAMF::ClassMapping do
     props.should == {"aDynamicProperty" => "asdf"}
   end
 
-  it "should allow setting hash key type to string" do
-    @conf.hash_key_access = :string
-    props = {:asdf => "asdf", :fdsa => "fdsa"}
+  it "should allow setting hash key type to symbol" do
+    @conf.hash_key_access = :symbol
+    props = {'asdf' => "asdf", 'fdsa' => "fdsa"}
     obj = RocketAMF::Values::TypedHash.new("")
     @mapper.populate_ruby_obj obj, props
-    obj.should == {"asdf" => "asdf", "fdsa" => "fdsa"}
+    obj.should == {:asdf => "asdf", :fdsa => "fdsa"}
   end
 
   it "should return correct class name for IntermediateObject" do

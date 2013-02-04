@@ -4,8 +4,9 @@ gem 'rubyamf', :path => File.dirname(__FILE__)
 
 gem 'rspec', '~>2.6'
 gem 'rcov'
+gem 'rdoc'
 gem 'rack', '~>1.0'
-gem 'sqlite3-ruby'
+gem 'sqlite3'
 gem "RocketAMF", :git => "git://github.com/rubyamf/rocketamf.git"
 
 case 'Rails 3.1'
