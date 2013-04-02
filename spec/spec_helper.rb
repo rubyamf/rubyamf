@@ -14,11 +14,15 @@ rescue LoadError => e
   Rails.configuration = Rails::Configuration.new
 end
 
+begin
+  require 'composite_primary_keys'
+rescue LoadError => e
+end
+
 # Active record setup
 require 'active_record'
 ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database  => ':memory:')
 ActiveRecord::Base.logger = Logger.new(STDOUT)
-require 'composite_primary_keys'
 
 ActiveRecord::Schema.define do
   create_table "parents" do |t|
@@ -49,8 +53,13 @@ class Child < ActiveRecord::Base
 end
 
 class CompositeChild < ActiveRecord::Base
-  set_table_name "children"
-  set_primary_keys :id, :name
+  if self.respond_to?(:table_name=)
+    self.table_name = "children"
+    self.primary_key = :id, :name
+  else
+    set_table_name "children"
+    set_primary_keys :id, :name
+  end
 end
 
 # Load RubyAMF
