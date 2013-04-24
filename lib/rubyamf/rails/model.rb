@@ -27,7 +27,7 @@ module RubyAMF::Rails
       end
 
       # Get base attributes hash for later use
-      base_attrs = self.send(:attributes_from_column_definition)
+      base_attrs = self.class.column_defaults.dup
 
       if is_new
         # Call initialize to populate everything for a new object
