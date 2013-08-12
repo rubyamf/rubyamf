@@ -1,3 +1,5 @@
+require 'spec_helper.rb'
+
 describe RubyAMF::Rails::RequestProcessor do
   before :all do
     class AmfTestController < ActionController::Base
