@@ -17,6 +17,11 @@ ActionController::Base.send(:include, RubyAMF::Rails::Controller)
 # Hook up ActiveRecord Model extensions
 if defined?(ActiveRecord)
   ActiveRecord::Base.send(:include, RubyAMF::Rails::Model)
+  class ActiveRecord::NamedScope::Scope
+    def encode_amf ser
+      ser.serialize ser.version, self.to_a
+    end
+  end
 end
 
 # Hook up rendering and hack in our custom error handling
