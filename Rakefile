@@ -7,8 +7,10 @@ g = Bundler::GemHelper.new(File.dirname(__FILE__))
 g.install
 
 RSpec::Core::RakeTask.new do |t|
-  t.rcov = true
-  t.rcov_opts = ['--exclude', 'spec,gems,.bundler']
+  unless (RUBY_VERSION.split('.').map(&:to_i) <=> [1, 9]) >= 0
+    t.rcov = true
+    t.rcov_opts = ['--exclude', 'spec,gems,.bundler']
+  end
 end
 
 desc 'Generate documentation for RubyAMF'

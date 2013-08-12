@@ -4,6 +4,13 @@ require 'bundler/setup'
 require 'rspec'
 require 'rspec/autorun'
 
+if (RUBY_VERSION.split('.').map(&:to_i) <=> [1, 9]) >= 0
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter 'spec'
+  end
+end
+
 begin
   # Rails 3+
   require 'rails'
