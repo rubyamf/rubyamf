@@ -51,7 +51,7 @@ module RubyAMF::Rails
 
       # Dispatch the request to the controller
       rails_version = ::Rails::VERSION::MAJOR
-      if rails_version == 3
+      if rails_version >= 3
         res = con.dispatch(method_name, req)
       else # Rails 2
         req.params['controller'] = controller.controller_name
