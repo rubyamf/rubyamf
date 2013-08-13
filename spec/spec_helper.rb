@@ -56,8 +56,14 @@ class Child < ActiveRecord::Base
 end
 
 class CompositeChild < ActiveRecord::Base
-  set_table_name "children"
-  set_primary_keys :id, :name
+  if ::ActiveRecord::VERSION::STRING < '3.2'
+    set_table_name "children"
+    set_primary_keys :id, :name
+  else
+    self.table_name = "children"
+    self.primary_keys = [:id, :name]
+  end
+
 end
 
 # Load RubyAMF

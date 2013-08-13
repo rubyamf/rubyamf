@@ -54,7 +54,7 @@ end
 module RubyAMF::Rails #:nodoc:
 end
 if defined?(Rails)
-  if Rails::VERSION::MAJOR == 3
+  if Rails::VERSION::MAJOR >= 3
     require 'rubyamf/rails/rails3_bootstrap'
   elsif Rails::VERSION::MAJOR == 2 && Rails::VERSION::MINOR >= 3
     require 'rubyamf/rails/rails2_bootstrap'

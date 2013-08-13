@@ -79,6 +79,13 @@ about configuration and use.
 
 TODO: Write up instructions
 
+== Running Tests
+Unless a command-line Rails 'major.minor' version is specified both bundle install, rspec, and rake spec will
+default to Rails 4.0. To run tests against different versions of Rails, use:
+
+    $ RAILS_VERSION=major.minor bundle install
+    $ RAILS_VERSION=major.minor rspec
+
 == LICENSE:
 
 (The MIT License)
